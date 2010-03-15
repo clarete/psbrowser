@@ -119,14 +119,14 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
 }
 
 static char *
-cmd_create (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
-            int nparams, void *data)
+cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+           int nparams, void *data)
 {
   ta_pubsub_node_t *node;
   char *ret = NULL;
   iks *iq;
   node = ta_pubsub_node_new (ctx->ps, params[0]);
-  iq = ta_pubsub_node_create (node, "type", params[1], NULL);
+  iq = ta_pubsub_node_create (node, "type", "collection", NULL);
   ta_pubsub_node_free (node);
   ta_xmpp_client_send (ctx->xmpp, iq);
   return ret;
@@ -199,7 +199,7 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
 {
   _register_cmd (ctx, "ls", 0, cmd_list);
   _register_cmd (ctx, "rm", 1, cmd_delete);
-  _register_cmd (ctx, "create", 2, cmd_create);
+  _register_cmd (ctx, "mkdir", 1, cmd_mkdir);
 }
 
 int
