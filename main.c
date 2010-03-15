@@ -62,24 +62,47 @@ struct ps_ctx
 
 /* commands */
 
+static void
+parse_list (ta_xmpp_client_t *client, iks *node, void *data)
+{
+  iks *item;
+
+  /* Handling any possible error */
+  if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
+    {
+      /* Traversiong to iq > query > error and looking for the
+       * `item-not-found' node. */
+      if (iks_find (iks_find (node, "error"), "item-not-found"))
+        printf ("Node not found\n");
+      return;
+    }
+
+  /* Traversing to iq > query and then iterating over its (item)
+   * childs. */
+  item = iks_child (iks_find (node, "query"));
+  while (item)
+    {
+      printf ("%s\n", iks_find_attrib (item, "node"));
+      item = iks_next (item);
+    }
+}
+
 static char *
 cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
           int nparams, void *data)
 {
+  ta_pubsub_node_t *node;
   char *ret = NULL;
   iks *info;
 
   if (nparams == 0)
-    info = ta_pubsub_query_nodes (ctx->ps);
-  if (nparams == 1)
-    {
-      ta_pubsub_node_t *node;
-      node = ta_pubsub_node_new (ctx->ps, params[0]);
-      info = ta_pubsub_node_query_info (node);
-      ta_pubsub_node_free (node);
-    }
+    node = ta_pubsub_node_new (ctx->ps, NULL);
+  else if (nparams == 1)
+    node = ta_pubsub_node_new (ctx->ps, params[0]);
+  info = ta_pubsub_node_nodes (node);
+  ta_pubsub_node_free (node);
 
-  ta_xmpp_client_send (ctx->xmpp, info);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, NULL, NULL);
   iks_delete (info);
   return ret;
 }
