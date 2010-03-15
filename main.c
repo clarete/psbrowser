@@ -60,6 +60,8 @@ struct ps_ctx
   hashtable_t *commands;
 };
 
+int command_running = 0;
+
 /* commands */
 
 static void
@@ -73,7 +75,8 @@ parse_list (ta_xmpp_client_t *client, iks *node, void *data)
       /* Traversiong to iq > query > error and looking for the
        * `item-not-found' node. */
       if (iks_find (iks_find (node, "error"), "item-not-found"))
-        printf ("Node not found\n");
+        printf ("Node `%s' not found\n", (char *) data);
+      command_running = 0;
       return;
     }
 
@@ -85,6 +88,8 @@ parse_list (ta_xmpp_client_t *client, iks *node, void *data)
       printf ("%s\n", iks_find_attrib (item, "node"));
       item = iks_next (item);
     }
+
+  command_running = 0;
 }
 
 static char *
@@ -92,18 +97,24 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
           int nparams, void *data)
 {
   ta_pubsub_node_t *node;
+  char *name = NULL;
   char *ret = NULL;
   iks *info;
 
   if (nparams == 0)
     node = ta_pubsub_node_new (ctx->ps, NULL);
   else if (nparams == 1)
-    node = ta_pubsub_node_new (ctx->ps, params[0]);
+    {
+      node = ta_pubsub_node_new (ctx->ps, params[0]);
+      name = strdup (params[0]);
+    }
   info = ta_pubsub_node_nodes (node);
   ta_pubsub_node_free (node);
 
-  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, NULL, NULL);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, free);
   iks_delete (info);
+
+  command_running = 1;
   return ret;
 }
 
@@ -186,9 +197,9 @@ _register_cmd (ps_ctx_t *ctx, const char *name, int nparams, ps_callback_t cb)
 static void
 ps_ctx_register_commands (ps_ctx_t *ctx)
 {
-  _register_cmd (ctx, "list", 0, cmd_list);
+  _register_cmd (ctx, "ls", 0, cmd_list);
+  _register_cmd (ctx, "rm", 1, cmd_delete);
   _register_cmd (ctx, "create", 2, cmd_create);
-  _register_cmd (ctx, "delete", 1, cmd_delete);
 }
 
 int
@@ -312,10 +323,16 @@ main (int argc, char **argv)
           if ((msg = command->callback (ctx, command, params, nparams, NULL))
               != NULL)
             {
-              printf ("%s\n", msg);
+              printf ("%s", msg);
               free (msg);
             }
         }
+
+      /* A little (hammer) timeout to wait the command to run. If the
+       * server does not answer, we'll not leave this loop and it is
+       * not good. */
+      while (command_running)
+        sleep (0.5);
     }
 
  finalize:
