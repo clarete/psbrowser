@@ -1,0 +1,305 @@
+/* main.c - This file is part of the psbrowser program
+ *
+ * Copyright (C) 2010  Lincoln de Sousa <lincoln@comum.org>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <iksemel.h>
+#include <taningia/taningia.h>
+#include <bitu/util.h>
+
+#include "hashtable.h"
+#include "hashtable-utils.h"
+
+#define PS1    "> "
+
+/* These declarations are probably going to be moved to a header
+ * file. */
+
+typedef struct ps_command ps_command_t;
+
+typedef struct ps_ctx ps_ctx_t;
+
+typedef char * (*ps_callback_t) (ps_ctx_t *,     /* psbrowser context */
+                                 ps_command_t *, /* command */
+                                 char **,        /* Params */
+                                 int nparams,    /* Number of recv params */
+                                 void *data);    /* User data slot */
+
+struct ps_command
+{
+  const char *name;
+  int nparams;
+  ps_callback_t callback;
+};
+
+struct ps_ctx
+{
+  ta_xmpp_client_t *xmpp;
+  ta_pubsub_t *ps;
+  hashtable_t *commands;
+};
+
+/* commands */
+
+static char *
+cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+          int nparams, void *data)
+{
+  char *ret = NULL;
+  iks *info;
+
+  if (nparams == 0)
+    info = ta_pubsub_query_nodes (ctx->ps);
+  if (nparams == 1)
+    {
+      ta_pubsub_node_t *node;
+      node = ta_pubsub_node_new (ctx->ps, params[0]);
+      info = ta_pubsub_node_query_info (node);
+      ta_pubsub_node_free (node);
+    }
+
+  ta_xmpp_client_send (ctx->xmpp, info);
+  iks_delete (info);
+  return ret;
+}
+
+static char *
+cmd_create (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+            int nparams, void *data)
+{
+  ta_pubsub_node_t *node;
+  char *ret = NULL;
+  iks *iq;
+  node = ta_pubsub_node_new (ctx->ps, params[0]);
+  iq = ta_pubsub_node_create (node, "type", params[1], NULL);
+  ta_pubsub_node_free (node);
+  ta_xmpp_client_send (ctx->xmpp, iq);
+  return ret;
+}
+
+static char *
+cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+            int nparams, void *data)
+{
+  ta_pubsub_node_t *node;
+  char *ret = NULL;
+  iks *iq;
+  node = ta_pubsub_node_new (ctx->ps, params[0]);
+  iq = ta_pubsub_node_delete (node);
+  ta_pubsub_node_free (node);
+  ta_xmpp_client_send (ctx->xmpp, iq);
+  return ret;
+}
+
+/* taningia xmpp client event callbacks */
+
+static int
+auth_cb (ta_xmpp_client_t *client, void *data)
+{
+  iks *node;
+
+  /* Sending presence info */
+  node = iks_make_pres (IKS_SHOW_AVAILABLE, "Online");
+  ta_xmpp_client_send (client, node);
+  iks_delete (node);
+
+  /* executing requested command */
+
+  return 0;
+}
+
+static int
+auth_failed_cb (ta_xmpp_client_t *client, void *data)
+{
+  ta_xmpp_client_disconnect (client);
+  return 0;
+}
+
+static void
+usage (const char *pname)
+{
+  fprintf (stderr,
+           "Usage: %s [OPTIONS]\n\n"
+           "Options:\n"
+           "  -j <jid>\n"
+           "  -p <password>\n"
+           "  -s <pubsub-service>\n"
+           "  -a <server-addr>\n",
+           pname);
+}
+
+static inline void
+_register_cmd (ps_ctx_t *ctx, const char *name, int nparams, ps_callback_t cb)
+{
+  ps_command_t *cmd;
+  cmd = malloc (sizeof (ps_command_t));
+  cmd->name = name;
+  cmd->nparams = nparams;
+  cmd->callback = cb;
+  hashtable_set (ctx->commands, (void *) name, cmd);
+}
+
+static void
+ps_ctx_register_commands (ps_ctx_t *ctx)
+{
+  _register_cmd (ctx, "list", 0, cmd_list);
+  _register_cmd (ctx, "create", 2, cmd_create);
+  _register_cmd (ctx, "delete", 1, cmd_delete);
+}
+
+int
+main (int argc, char **argv)
+{
+  int opt;
+  char *jid = NULL,
+    *password = NULL,
+    *service = NULL,
+    *addr = NULL;
+  int port = 5222;
+  ps_ctx_t *ctx;
+  ta_log_t *logger;
+
+  while ((opt = getopt (argc, argv, "j:p:s:a:")) != -1)
+    {
+      switch (opt)
+        {
+        case 'j':
+          jid = optarg;
+          break;
+
+        case 'p':
+          password = optarg;
+          break;
+
+        case 's':
+          service = optarg;
+          break;
+
+        case 'a':
+          addr = optarg;
+          break;
+
+        default:
+          usage (argv[0]);
+          exit (EXIT_FAILURE);
+        }
+    }
+  if (!jid || !password || !service || !addr)
+    {
+      usage (argv[0]);
+      exit (EXIT_FAILURE);
+    }
+
+  ctx = malloc (sizeof (ps_ctx_t));
+  ctx->xmpp = ta_xmpp_client_new (jid, password, addr, port);
+
+  ta_xmpp_client_event_connect (ctx->xmpp, "authenticated",
+                                (ta_xmpp_client_hook_t) auth_cb,
+                                NULL);
+
+  ta_xmpp_client_event_connect (ctx->xmpp, "authentication-failed",
+                                (ta_xmpp_client_hook_t) auth_failed_cb,
+                                NULL);
+
+  logger = ta_xmpp_client_get_logger (ctx->xmpp);
+  ta_log_set_use_colors (logger, 1);
+  //ta_log_set_level (logger, 62);
+
+  ctx->ps = ta_pubsub_new (jid, service);
+  ctx->commands = hashtable_create (hash_string, string_equal, NULL, free);
+  ps_ctx_register_commands (ctx);
+
+  if (!ta_xmpp_client_connect (ctx->xmpp))
+    {
+      ta_error_t *error;
+      error = ta_xmpp_client_get_error (ctx->xmpp);
+      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
+               ta_error_get_message (error));
+      ta_error_free (error);
+      goto finalize;
+    }
+  if (!ta_xmpp_client_run (ctx->xmpp, 1))
+    {
+      ta_error_t *error;
+      error = ta_xmpp_client_get_error (ctx->xmpp);
+      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
+               ta_error_get_message (error));
+      ta_error_free (error);
+      goto finalize;
+    }
+
+  while (1)
+    {
+      char *line;
+      size_t llen;
+
+      /* Vars used to parse command line */
+      char *cmd = NULL;
+      char **params = NULL;
+      int nparams;
+
+      /* Main readline call.*/
+      line = readline (PS1);
+
+      if (line == NULL)
+        {
+          printf ("\n");
+          break;
+        }
+      if ((llen = strlen (line)) == 0)
+        continue;
+      if (!bitu_util_extract_params (line, &cmd, &params, &nparams))
+        continue;
+      else
+        {
+          ps_command_t *command;
+          char *msg;
+          if ((command = hashtable_get (ctx->commands, cmd)) == NULL)
+            {
+              printf ("Command `%s' not found\n", cmd);
+              continue;
+            }
+          if (command->nparams > nparams)
+            {
+              printf ("Command `%s' takes at least %d params. (%d given)\n",
+                      cmd, command->nparams, nparams);
+              continue;
+            }
+          if ((msg = command->callback (ctx, command, params, nparams, NULL))
+              != NULL)
+            {
+              printf ("%s\n", msg);
+              free (msg);
+            }
+        }
+    }
+
+ finalize:
+  ta_xmpp_client_free (ctx->xmpp);
+  ta_pubsub_free (ctx->ps);
+  hashtable_destroy (ctx->commands);
+  free (ctx);
+
+  return 0;
+}
