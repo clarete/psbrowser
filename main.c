@@ -26,23 +26,11 @@
 #include <taningia/taningia.h>
 #include <bitu/util.h>
 
+#include "psbrowser.h"
 #include "hashtable.h"
 #include "hashtable-utils.h"
 
 #define PS1    "> "
-
-/* These declarations are probably going to be moved to a header
- * file. */
-
-typedef struct ps_command ps_command_t;
-
-typedef struct ps_ctx ps_ctx_t;
-
-typedef char * (*ps_callback_t) (ps_ctx_t *,     /* psbrowser context */
-                                 ps_command_t *, /* command */
-                                 char **,        /* Params */
-                                 int nparams,    /* Number of recv params */
-                                 void *data);    /* User data slot */
 
 struct ps_command
 {
