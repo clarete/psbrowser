@@ -245,7 +245,7 @@ main (int argc, char **argv)
 
   logger = ta_xmpp_client_get_logger (ctx->xmpp);
   ta_log_set_use_colors (logger, 1);
-  //ta_log_set_level (logger, 62);
+  ta_log_set_level (logger, TA_LOG_WARN);
 
   ctx->from = jid;
   ctx->to = service;
