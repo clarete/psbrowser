@@ -117,6 +117,7 @@ cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   iq = ta_pubsub_node_create (ctx->from, ctx->to, params[0],
                               "type", "collection", NULL);
   ta_xmpp_client_send (ctx->xmpp, iq);
+  iks_delete (iq);
   return ret;
 }
 
@@ -128,6 +129,7 @@ cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   iks *iq;
   iq = ta_pubsub_node_delete (ctx->from, ctx->to, params[0]);
   ta_xmpp_client_send (ctx->xmpp, iq);
+  iks_delete (iq);
   return ret;
 }
 
