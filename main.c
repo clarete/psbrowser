@@ -84,41 +84,47 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
           int nparams, void *data)
 {
   char *name = NULL;
-  char *ret = NULL;
   iks *info;
 
   if (nparams == 1)
-    name = strdup (params[0]);
+    {
+      size_t len;
+      name = strdup (params[0]);
+
+      /* Getting rid of trailing "/" chars at the end of the node name
+       * parameter */
+      len = strlen (name) - 1;
+      while (name[len] == '/')
+        name[len--] = '\0';
+    }
   info = ta_pubsub_node_query_nodes (ctx->from, ctx->to, name);
   ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, free);
   iks_delete (info);
   command_running = 1;
-  return ret;
+  return NULL;
 }
 
 static char *
 cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
            int nparams, void *data)
 {
-  char *ret = NULL;
   iks *iq;
   iq = ta_pubsub_node_create (ctx->from, ctx->to, params[0],
                               "type", "collection", NULL);
   ta_xmpp_client_send (ctx->xmpp, iq);
   iks_delete (iq);
-  return ret;
+  return NULL;
 }
 
 static char *
 cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
             int nparams, void *data)
 {
-  char *ret = NULL;
   iks *iq;
   iq = ta_pubsub_node_delete (ctx->from, ctx->to, params[0]);
   ta_xmpp_client_send (ctx->xmpp, iq);
   iks_delete (iq);
-  return ret;
+  return NULL;
 }
 
 /* taningia xmpp client event callbacks */
