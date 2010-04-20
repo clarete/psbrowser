@@ -54,8 +54,9 @@ struct ps_command
 struct ps_ctx
 {
   ta_xmpp_client_t *xmpp;
-  ta_pubsub_t *ps;
   hashtable_t *commands;
+  const char *from;
+  const char *to;
 };
 
 int command_running = 0;
@@ -94,24 +95,15 @@ static char *
 cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
           int nparams, void *data)
 {
-  ta_pubsub_node_t *node;
   char *name = NULL;
   char *ret = NULL;
   iks *info;
 
-  if (nparams == 0)
-    node = ta_pubsub_node_new (ctx->ps, NULL);
-  else if (nparams == 1)
-    {
-      node = ta_pubsub_node_new (ctx->ps, params[0]);
-      name = strdup (params[0]);
-    }
-  info = ta_pubsub_node_nodes (node);
-  ta_pubsub_node_free (node);
-
+  if (nparams == 1)
+    name = strdup (params[0]);
+  info = ta_pubsub_node_query_nodes (ctx->from, ctx->to, name);
   ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, free);
   iks_delete (info);
-
   command_running = 1;
   return ret;
 }
@@ -120,12 +112,10 @@ static char *
 cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
            int nparams, void *data)
 {
-  ta_pubsub_node_t *node;
   char *ret = NULL;
   iks *iq;
-  node = ta_pubsub_node_new (ctx->ps, params[0]);
-  iq = ta_pubsub_node_create (node, "type", "collection", NULL);
-  ta_pubsub_node_free (node);
+  iq = ta_pubsub_node_create (ctx->from, ctx->to, params[0],
+                              "type", "collection", NULL);
   ta_xmpp_client_send (ctx->xmpp, iq);
   return ret;
 }
@@ -134,12 +124,9 @@ static char *
 cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
             int nparams, void *data)
 {
-  ta_pubsub_node_t *node;
   char *ret = NULL;
   iks *iq;
-  node = ta_pubsub_node_new (ctx->ps, params[0]);
-  iq = ta_pubsub_node_delete (node);
-  ta_pubsub_node_free (node);
+  iq = ta_pubsub_node_delete (ctx->from, ctx->to, params[0]);
   ta_xmpp_client_send (ctx->xmpp, iq);
   return ret;
 }
@@ -258,7 +245,8 @@ main (int argc, char **argv)
   ta_log_set_use_colors (logger, 1);
   //ta_log_set_level (logger, 62);
 
-  ctx->ps = ta_pubsub_new (jid, service);
+  ctx->from = jid;
+  ctx->to = service;
   ctx->commands = hashtable_create (hash_string, string_equal, NULL, free);
   ps_ctx_register_commands (ctx);
 
@@ -268,7 +256,7 @@ main (int argc, char **argv)
       error = ta_xmpp_client_get_error (ctx->xmpp);
       fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
                ta_error_get_message (error));
-      ta_error_free (error);
+      ta_object_unref (error);
       goto finalize;
     }
   if (!ta_xmpp_client_run (ctx->xmpp, 1))
@@ -277,7 +265,7 @@ main (int argc, char **argv)
       error = ta_xmpp_client_get_error (ctx->xmpp);
       fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
                ta_error_get_message (error));
-      ta_error_free (error);
+      ta_object_unref (error);
       goto finalize;
     }
 
@@ -334,8 +322,7 @@ main (int argc, char **argv)
     }
 
  finalize:
-  ta_xmpp_client_free (ctx->xmpp);
-  ta_pubsub_free (ctx->ps);
+  ta_object_unref (ctx->xmpp);
   hashtable_destroy (ctx->commands);
   free (ctx);
 
