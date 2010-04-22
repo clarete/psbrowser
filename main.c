@@ -127,6 +127,67 @@ cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   return NULL;
 }
 
+static char *
+cmd_subscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+               int nparams, void *data)
+{
+  iks *iq;
+  char *node, *jid;
+  node = params[0];
+  if (nparams == 1)
+    jid = (char *) ctx->from;
+  else if (nparams == 2)
+    jid = params[1];
+  iq = ta_pubsub_node_subscribe (ctx->from, ctx->to, node, jid);
+  ta_xmpp_client_send (ctx->xmpp, iq);
+  iks_delete (iq);
+  return NULL;
+}
+
+static void
+parse_subscriptions (ta_xmpp_client_t *client, iks *node, void *data)
+{
+  iks *item;
+
+  /* Handling any possible error */
+  if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
+    {
+      /* Traversiong to iq > query > error and looking for the
+       * `item-not-found' node. */
+      if (iks_find (iks_find (node, "error"), "item-not-found"))
+        printf ("Node `%s' not found\n", (char *) data);
+      command_running = 0;
+      return;
+    }
+
+  /* Traversing to iq > pubsub > subscriptions > subscription and then
+   * iterating over its (item) siblings. */
+  item = iks_child (iks_child (iks_child (node)));
+  while (item)
+    {
+      printf ("%s (%s)\n",
+              iks_find_attrib (item, "jid"),
+              iks_find_attrib (item, "subscription"));
+      item = iks_next (item);
+    }
+  command_running = 0;
+}
+
+static char *
+cmd_subscriptions (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+                   int nparams, void *data)
+{
+  iks *iq;
+  char *node, *jid;
+  node = params[0];
+  iq = ta_pubsub_node_query_subscriptions (ctx->from, ctx->to, node);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_subscriptions,
+                                  NULL, NULL);
+  iks_delete (iq);
+  command_running = 1;
+  return NULL;
+}
+
 /* taningia xmpp client event callbacks */
 
 static int
@@ -181,6 +242,8 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
   _register_cmd (ctx, "ls", 0, cmd_list);
   _register_cmd (ctx, "rm", 1, cmd_delete);
   _register_cmd (ctx, "mkdir", 1, cmd_mkdir);
+  _register_cmd (ctx, "subscribe", 1, cmd_subscribe);
+  _register_cmd (ctx, "subscriptions", 1, cmd_subscriptions);
 }
 
 int
