@@ -225,6 +225,26 @@ usage (const char *pname)
            pname);
 }
 
+static char *
+get_history_file ()
+{
+  char *home;
+  char hist_file[256];
+  home = getenv ("HOME");
+  if (home == NULL)
+    home = "~";
+  snprintf (hist_file, 256, "%s/.psbrowserhistory", home);
+  return strdup (hist_file);
+}
+
+static void
+save_history_file (void)
+{
+  char *hfile = get_history_file ();
+  write_history (hfile);
+  free (hfile);
+}
+
 static inline void
 _register_cmd (ps_ctx_t *ctx, const char *name, int nparams, ps_callback_t cb)
 {
@@ -257,6 +277,7 @@ main (int argc, char **argv)
   int port = 5222;
   ps_ctx_t *ctx;
   ta_log_t *logger;
+  char *hfile = NULL;
 
   while ((opt = getopt (argc, argv, "j:p:s:a:")) != -1)
     {
@@ -328,6 +349,14 @@ main (int argc, char **argv)
       goto finalize;
     }
 
+  /* Initializing history library and registering a callback to write
+   * back to history file when program finishes. */
+  hfile = get_history_file ();
+  using_history ();
+  read_history (hfile);
+  atexit (save_history_file);
+  free (hfile);
+
   while (1)
     {
       char *line;
@@ -348,6 +377,10 @@ main (int argc, char **argv)
         }
       if ((llen = strlen (line)) == 0)
         continue;
+
+      /* Saving readline history */
+      add_history (line);
+
       if (!bitu_util_extract_params (line, &cmd, &params, &nparams))
         continue;
       else
