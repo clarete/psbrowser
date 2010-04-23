@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <iksemel.h>
@@ -50,6 +51,35 @@ struct ps_ctx
 };
 
 int command_running = 0;
+
+static void *
+xmalloc (size_t size)
+{
+  void *ret;
+  while (size % 8 != 0)
+    size++;
+  if ((ret = malloc (size)) == NULL)
+    {
+      fprintf (stderr, "Couldn't alloc memory\n");
+      exit (ENOMEM);
+    }
+  return ret;
+}
+
+static void *
+xrealloc (void *ptr, size_t size)
+{
+  void *ret;
+  while (size % 8 != 0)
+    size++;
+  if ((ret = realloc (ptr, size)) == NULL)
+    {
+      fprintf (stderr, "Couldn't alloc memory\n");
+      if (ptr) free (ptr);
+      exit (ENOMEM);
+    }
+  return ret;
+}
 
 /* commands */
 
@@ -93,12 +123,7 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   if (nparams == 1)
     {
       size_t len;
-
-      if (ctx->cwd && 0)
-        {
-        }
-      else
-        name = strdup (params[0]);
+      name = strdup (params[0]);
 
       /* Getting rid of trailing "/" chars at the end of the node name
        * parameter */
@@ -106,6 +131,9 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
       while (name[len] == '/')
         name[len--] = '\0';
     }
+  else if (nparams == 0 && ctx->cwd != NULL)
+    name = strdup (ctx->cwd);
+
   info = ta_pubsub_node_query_nodes (ctx->from, ctx->to, name);
   ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, free);
   iks_delete (info);
@@ -279,7 +307,7 @@ cmd_pwd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
       int counter;
 
       /* This +1 means that "\n" will be concatenated */
-      val = malloc (len+2);
+      val = xmalloc (len+2);
       for (counter = 0; counter < len; counter++)
         val[counter] = ctx->cwd[counter];
       val[counter++] = '\n';
@@ -352,7 +380,7 @@ static inline void
 _register_cmd (ps_ctx_t *ctx, const char *name, int nparams, ps_callback_t cb)
 {
   ps_command_t *cmd;
-  cmd = malloc (sizeof (ps_command_t));
+  cmd = xmalloc (sizeof (ps_command_t));
   cmd->name = name;
   cmd->nparams = nparams;
   cmd->callback = cb;
@@ -375,13 +403,13 @@ static char *
 gen_ps1 (ps_ctx_t *ctx)
 {
   char *ps1 = NULL;
-  size_t len;
+  size_t len, total;
 
   /* Initial size */
-  len = strlen (ctx->from);
+  total = len = strlen (ctx->from);
 
   /* This +3 reserve space to the `> \0' last chars */
-  ps1 = malloc (len+3);
+  ps1 = xmalloc (len+3);
 
   memcpy (ps1, ctx->from, len);
   ps1[len++] = ':';
@@ -390,21 +418,17 @@ gen_ps1 (ps_ctx_t *ctx)
     {
       char *p, *s, *tmp;
       /* Saving current end of string */
+      total = len + strlen (ctx->cwd);
+      tmp = xrealloc (ps1, total + 3);
+      ps1 = tmp;
       s = ps1 + len;
-      len += strlen (ctx->cwd);
-      if ((tmp = realloc (ps1, len)) == NULL)
-        {
-          free (ps1);
-          return NULL;
-        }
-      else
-        ps1 = tmp;
       p = ctx->cwd;
       for (; *p != '\0'; *s++ = *p++);
     }
-  ps1[len++] = '>';
-  ps1[len++] = ' ';
-  ps1[len++] = '\0';
+
+  ps1[total++] = '>';
+  ps1[total++] = ' ';
+  ps1[total] = '\0';
   return ps1;
 }
 
@@ -452,7 +476,7 @@ main (int argc, char **argv)
       exit (EXIT_FAILURE);
     }
 
-  ctx = malloc (sizeof (ps_ctx_t));
+  ctx = xmalloc (sizeof (ps_ctx_t));
   ctx->xmpp = ta_xmpp_client_new (jid, password, addr, port);
 
   ta_xmpp_client_event_connect (ctx->xmpp, "authenticated",
