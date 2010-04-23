@@ -72,7 +72,9 @@ parse_list (ta_xmpp_client_t *client, iks *node, void *data)
   item = iks_child (iks_find (node, "query"));
   while (item)
     {
-      printf ("%s\n", iks_find_attrib (item, "node"));
+      char *node = iks_find_attrib (item, "node");
+      if (node)
+        printf ("%s\n", node);
       item = iks_next (item);
     }
 
