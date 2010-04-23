@@ -43,6 +43,8 @@ struct ps_ctx
 {
   ta_xmpp_client_t *xmpp;
   hashtable_t *commands;
+  char *cwd;
+  char *oldcwd;
   const char *from;
   const char *to;
 };
@@ -91,7 +93,12 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   if (nparams == 1)
     {
       size_t len;
-      name = strdup (params[0]);
+
+      if (ctx->cwd && 0)
+        {
+        }
+      else
+        name = strdup (params[0]);
 
       /* Getting rid of trailing "/" chars at the end of the node name
        * parameter */
@@ -190,6 +197,100 @@ cmd_subscriptions (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   return NULL;
 }
 
+static void
+parse_cd_query (ta_xmpp_client_t *client, iks *node, void *data)
+{
+  int *node_exists = (int *) data;
+  if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
+    *node_exists = 0;
+  else
+    *node_exists = 1;
+  command_running = 0;
+}
+
+/* This command basically controlls the ctx->cwd variable
+ * content. This var will be used by the `cmd_list()' to be the base
+ * directory when listing some node content. */
+static char *
+cmd_cd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+        int nparams, void *data)
+{
+  iks *query_nodes;
+  int node_exists = -1;
+  size_t len;
+
+  if (ctx->cwd != NULL)
+    {
+      /* Caching current value of cwd (don't need to free it) */
+      if (ctx->oldcwd)
+        free (ctx->oldcwd);
+      ctx->oldcwd = ctx->cwd;
+      ctx->cwd = NULL;
+    }
+  if (nparams == 0)
+    {
+      /* No verification is needed. It is obvious that the `no node
+       * selected' node exists =P */
+      ctx->cwd = NULL;
+      return NULL;
+    }
+
+  ctx->cwd = strdup (params[0]);
+
+  /* Getting rid of the anoying trailing slash */
+  len = strlen (ctx->cwd) - 1;
+  while (ctx->cwd[len] == '/')
+    ctx->cwd[len--] = '\0';
+
+  /* This is a good time to validate if the `directory' choosen
+   * actually exists. */
+  query_nodes = ta_pubsub_node_query_nodes (ctx->from, ctx->to, ctx->cwd);
+  command_running = 1;
+  ta_xmpp_client_send_and_filter (ctx->xmpp, query_nodes, parse_cd_query,
+                                  &node_exists, NULL);
+  iks_delete (query_nodes);
+
+  /* Hammer way for waiting for the command return */
+  while (command_running)
+    sleep (0.5);
+
+  if (node_exists <= 0)
+    {
+      /* Telling the bad news */
+      printf ("Node `%s' not found\n", ctx->cwd);
+
+      /* Rolling back the current directory change */
+      free (ctx->cwd);
+      ctx->cwd = ctx->oldcwd;
+      ctx->oldcwd = NULL;
+      return NULL;
+    }
+  return NULL;
+}
+
+static char *
+cmd_pwd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+         int nparams, void *data)
+{
+  char *val;
+  if (ctx->cwd)
+    {
+      size_t len = strlen (ctx->cwd);
+      int counter;
+
+      /* This +1 means that "\n" will be concatenated */
+      val = malloc (len+2);
+      for (counter = 0; counter < len; counter++)
+        val[counter] = ctx->cwd[counter];
+      val[counter++] = '\n';
+      val[counter++] = '\0';
+    }
+  else
+    val = strdup ("<root>\n");
+
+  return val;
+}
+
 /* taningia xmpp client event callbacks */
 
 static int
@@ -262,6 +363,8 @@ static void
 ps_ctx_register_commands (ps_ctx_t *ctx)
 {
   _register_cmd (ctx, "ls", 0, cmd_list);
+  _register_cmd (ctx, "cd", 0, cmd_cd);
+  _register_cmd (ctx, "pwd", 0, cmd_pwd);
   _register_cmd (ctx, "rm", 1, cmd_delete);
   _register_cmd (ctx, "mkdir", 1, cmd_mkdir);
   _register_cmd (ctx, "subscribe", 1, cmd_subscribe);
@@ -327,6 +430,8 @@ main (int argc, char **argv)
   ta_log_set_use_colors (logger, 1);
   ta_log_set_level (logger, TA_LOG_WARN);
 
+  ctx->cwd = NULL;
+  ctx->oldcwd = NULL;
   ctx->from = jid;
   ctx->to = service;
   ctx->commands = hashtable_create (hash_string, string_equal, NULL, free);
