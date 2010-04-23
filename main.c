@@ -181,6 +181,23 @@ cmd_subscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   return NULL;
 }
 
+static char *
+cmd_unsubscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+                 int nparams, void *data)
+{
+  iks *iq;
+  char *node, *jid;
+  node = params[0];
+  if (nparams == 1)
+    jid = (char *) ctx->from;
+  else if (nparams == 2)
+    jid = params[1];
+  iq = ta_pubsub_node_unsubscribe (ctx->from, ctx->to, node, jid);
+  ta_xmpp_client_send (ctx->xmpp, iq);
+  iks_delete (iq);
+  return NULL;
+}
+
 static void
 parse_subscriptions (ta_xmpp_client_t *client, iks *node, void *data)
 {
@@ -396,6 +413,7 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
   _register_cmd (ctx, "rm", 1, cmd_delete);
   _register_cmd (ctx, "mkdir", 1, cmd_mkdir);
   _register_cmd (ctx, "subscribe", 1, cmd_subscribe);
+  _register_cmd (ctx, "unsubscribe", 1, cmd_unsubscribe);
   _register_cmd (ctx, "subscriptions", 1, cmd_subscriptions);
 }
 
