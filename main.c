@@ -30,7 +30,7 @@
 #include "hashtable.h"
 #include "hashtable-utils.h"
 
-#define PS1    "> "
+#define DEFAULT_PS1 "> "
 
 struct ps_command
 {
@@ -371,6 +371,43 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
   _register_cmd (ctx, "subscriptions", 1, cmd_subscriptions);
 }
 
+static char *
+gen_ps1 (ps_ctx_t *ctx)
+{
+  char *ps1 = NULL;
+  size_t len;
+
+  /* Initial size */
+  len = strlen (ctx->from);
+
+  /* This +3 reserve space to the `> \0' last chars */
+  ps1 = malloc (len+3);
+
+  memcpy (ps1, ctx->from, len);
+  ps1[len++] = ':';
+
+  if (ctx->cwd)
+    {
+      char *p, *s, *tmp;
+      /* Saving current end of string */
+      s = ps1 + len;
+      len += strlen (ctx->cwd);
+      if ((tmp = realloc (ps1, len)) == NULL)
+        {
+          free (ps1);
+          return NULL;
+        }
+      else
+        ps1 = tmp;
+      p = ctx->cwd;
+      for (; *p != '\0'; *s++ = *p++);
+    }
+  ps1[len++] = '>';
+  ps1[len++] = ' ';
+  ps1[len++] = '\0';
+  return ps1;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -466,6 +503,7 @@ main (int argc, char **argv)
 
   while (1)
     {
+      char *ps1 = NULL;
       char *line;
       size_t llen;
 
@@ -474,8 +512,13 @@ main (int argc, char **argv)
       char **params = NULL;
       int nparams;
 
+      /* Every shell needs to have a pretty PS1 */
+      if ((ps1 = gen_ps1 (ctx)) == NULL)
+        ps1 = strdup (DEFAULT_PS1);
+
       /* Main readline call.*/
-      line = readline (PS1);
+      line = readline (ps1);
+      free (ps1);
 
       if (line == NULL)
         {
