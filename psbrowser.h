@@ -23,7 +23,7 @@ typedef struct ps_command ps_command_t;
 
 typedef struct ps_ctx ps_ctx_t;
 
-typedef char * (*ps_callback_t) (ps_ctx_t *,     /* psbrowser context */
+typedef void   (*ps_callback_t) (ps_ctx_t *,     /* psbrowser context */
                                  ps_command_t *, /* command */
                                  char **,        /* Params */
                                  int nparams,    /* Number of recv params */

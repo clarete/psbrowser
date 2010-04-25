@@ -50,7 +50,7 @@ struct ps_ctx
   const char *to;
 };
 
-int command_running = 0;
+static void read_command (ps_ctx_t *ctx);
 
 static void *
 xmalloc (size_t size)
@@ -87,6 +87,7 @@ static void
 parse_list (ta_xmpp_client_t *client, iks *node, void *data)
 {
   iks *item;
+  ps_ctx_t *ctx = (ps_ctx_t *) data;
 
   /* Handling any possible error */
   if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
@@ -94,9 +95,8 @@ parse_list (ta_xmpp_client_t *client, iks *node, void *data)
       /* Traversiong to iq > query > error and looking for the
        * `item-not-found' node. */
       if (iks_find (iks_find (node, "error"), "item-not-found"))
-        printf ("Node `%s' not found\n", (char *) data);
-      command_running = 0;
-      return;
+        fprintf (stderr, "Node not found\n");
+      goto end;
     }
 
   /* Traversing to iq > query and then iterating over its (item)
@@ -110,11 +110,11 @@ parse_list (ta_xmpp_client_t *client, iks *node, void *data)
       item = iks_next (item);
     }
 
-  free (data);
-  command_running = 0;
+ end:
+  read_command (ctx);
 }
 
-static char *
+static void
 cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
           int nparams, void *data)
 {
@@ -134,15 +134,15 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
     }
   else if (nparams == 0 && ctx->cwd != NULL)
     name = strdup (ctx->cwd);
+  else
+    ctx->cwd = NULL;
 
   info = ta_pubsub_node_query_nodes (ctx->from, ctx->to, name);
-  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, NULL);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, ctx, NULL);
   iks_delete (info);
-  command_running = 1;
-  return NULL;
 }
 
-static char *
+static void
 cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
            int nparams, void *data)
 {
@@ -151,10 +151,10 @@ cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
                               "type", "collection", NULL);
   ta_xmpp_client_send (ctx->xmpp, iq);
   iks_delete (iq);
-  return NULL;
+  read_command (ctx);
 }
 
-static char *
+static void
 cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
             int nparams, void *data)
 {
@@ -162,10 +162,10 @@ cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   iq = ta_pubsub_node_delete (ctx->from, ctx->to, params[0]);
   ta_xmpp_client_send (ctx->xmpp, iq);
   iks_delete (iq);
-  return NULL;
+  read_command (ctx);
 }
 
-static char *
+static void
 cmd_subscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
                int nparams, void *data)
 {
@@ -179,10 +179,10 @@ cmd_subscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   iq = ta_pubsub_node_subscribe (ctx->from, ctx->to, node, jid);
   ta_xmpp_client_send (ctx->xmpp, iq);
   iks_delete (iq);
-  return NULL;
+  read_command (ctx);
 }
 
-static char *
+static void
 cmd_unsubscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
                  int nparams, void *data)
 {
@@ -196,13 +196,14 @@ cmd_unsubscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   iq = ta_pubsub_node_unsubscribe (ctx->from, ctx->to, node, jid);
   ta_xmpp_client_send (ctx->xmpp, iq);
   iks_delete (iq);
-  return NULL;
+  read_command (ctx);
 }
 
 static void
 parse_subscriptions (ta_xmpp_client_t *client, iks *node, void *data)
 {
   iks *item;
+  ps_ctx_t *ctx = (ps_ctx_t *) data;
 
   /* Handling any possible error */
   if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
@@ -210,9 +211,8 @@ parse_subscriptions (ta_xmpp_client_t *client, iks *node, void *data)
       /* Traversiong to iq > query > error and looking for the
        * `item-not-found' node. */
       if (iks_find (iks_find (node, "error"), "item-not-found"))
-        printf ("Node `%s' not found\n", (char *) data);
-      command_running = 0;
-      return;
+        fprintf (stderr, "Node not found\n");
+      goto end;
     }
 
   /* Traversing to iq > pubsub > subscriptions > subscription and then
@@ -225,10 +225,11 @@ parse_subscriptions (ta_xmpp_client_t *client, iks *node, void *data)
               iks_find_attrib (item, "subscription"));
       item = iks_next (item);
     }
-  command_running = 0;
+ end:
+  read_command (ctx);
 }
 
-static char *
+static void
 cmd_subscriptions (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
                    int nparams, void *data)
 {
@@ -237,32 +238,35 @@ cmd_subscriptions (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   node = params[0];
   iq = ta_pubsub_node_query_subscriptions (ctx->from, ctx->to, node);
   ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_subscriptions,
-                                  NULL, NULL);
+                                  ctx, NULL);
   iks_delete (iq);
-  command_running = 1;
-  return NULL;
 }
 
 static void
 parse_cd_query (ta_xmpp_client_t *client, iks *node, void *data)
 {
-  int *node_exists = (int *) data;
+  ps_ctx_t *ctx = (ps_ctx_t *) data;
   if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
-    *node_exists = 0;
-  else
-    *node_exists = 1;
-  command_running = 0;
+    {
+      /* Telling the bad news */
+      printf ("Node `%s' not found\n", ctx->cwd);
+
+      /* Rolling back the current directory change */
+      free (ctx->cwd);
+      ctx->cwd = ctx->oldcwd;
+      ctx->oldcwd = NULL;
+    }
+  read_command (ctx);
 }
 
 /* This command basically controlls the ctx->cwd variable
  * content. This var will be used by the `cmd_list()' to be the base
  * directory when listing some node content. */
-static char *
+static void
 cmd_cd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
         int nparams, void *data)
 {
   iks *query_nodes;
-  int node_exists = -1;
   size_t len;
 
   if (ctx->cwd != NULL)
@@ -278,7 +282,8 @@ cmd_cd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
       /* No verification is needed. It is obvious that the `no node
        * selected' node exists =P */
       ctx->cwd = NULL;
-      return NULL;
+      read_command (ctx);
+      return;
     }
 
   ctx->cwd = strdup (params[0]);
@@ -291,72 +296,133 @@ cmd_cd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   /* This is a good time to validate if the `directory' choosen
    * actually exists. */
   query_nodes = ta_pubsub_node_query_nodes (ctx->from, ctx->to, ctx->cwd);
-  command_running = 1;
   ta_xmpp_client_send_and_filter (ctx->xmpp, query_nodes, parse_cd_query,
-                                  &node_exists, NULL);
+                                  ctx, NULL);
   iks_delete (query_nodes);
-
-  /* Hammer way for waiting for the command return */
-  while (command_running)
-    sleep (0.5);
-
-  if (node_exists <= 0)
-    {
-      /* Telling the bad news */
-      printf ("Node `%s' not found\n", ctx->cwd);
-
-      /* Rolling back the current directory change */
-      free (ctx->cwd);
-      ctx->cwd = ctx->oldcwd;
-      ctx->oldcwd = NULL;
-      return NULL;
-    }
-  return NULL;
 }
 
-static char *
+static void
 cmd_pwd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
          int nparams, void *data)
 {
-  char *val;
+  if (ctx->cwd != NULL)
+    printf ("%s\n", ctx->cwd);
+  else
+    printf ("<root>\n");
+  read_command (ctx);
+}
+
+/* little helper function to generate a pretty PS1 like value to feed
+ * the readline() call. */
+
+static char *
+gen_ps1 (ps_ctx_t *ctx)
+{
+  char *ps1 = NULL;
+  size_t len, total;
+
+  /* Initial size */
+  total = len = strlen (ctx->from);
+
+  /* This +3 reserve space to the `> \0' last chars */
+  ps1 = xmalloc (len+3);
+  memcpy (ps1, ctx->from, len);
+  ps1[len++] = ':';
+
   if (ctx->cwd)
     {
-      size_t len = strlen (ctx->cwd);
-      int counter;
-
-      /* This +1 means that "\n" will be concatenated */
-      val = xmalloc (len+2);
-      for (counter = 0; counter < len; counter++)
-        val[counter] = ctx->cwd[counter];
-      val[counter++] = '\n';
-      val[counter++] = '\0';
+      char *p, *s, *tmp;
+      /* Saving current end of string */
+      total = len + strlen (ctx->cwd);
+      tmp = xrealloc (ps1, total + 3);
+      ps1 = tmp;
+      s = ps1 + len;
+      p = ctx->cwd;
+      for (; *p != '\0'; *s++ = *p++);
     }
-  else
-    val = strdup ("<root>\n");
 
-  return val;
+  ps1[total++] = '>';
+  ps1[total++] = ' ';
+  ps1[total] = '\0';
+  return ps1;
+}
+
+/* function that reads a new command form the shell */
+
+static void
+read_command (ps_ctx_t *ctx)
+{
+  char *ps1 = NULL;
+  char *line;
+  size_t llen;
+
+  /* Vars used to parse command line */
+  char *cmd = NULL;
+  char **params = NULL;
+  int nparams;
+
+  /* Every shell needs to have a pretty PS1 */
+  if ((ps1 = gen_ps1 (ctx)) == NULL)
+    ps1 = strdup (DEFAULT_PS1);
+
+  /* Main readline call.*/
+  line = readline (ps1);
+  free (ps1);
+
+  if (line == NULL)
+    {
+      printf ("\n");
+      exit (EXIT_SUCCESS);
+      return;
+    }
+  if ((llen = strlen (line)) == 0)
+    return;
+
+  /* Saving readline history */
+  add_history (line);
+
+  if (!bitu_util_extract_params (line, &cmd, &params, &nparams))
+    return;
+  else
+    {
+      ps_command_t *command;
+      if ((command = hashtable_get (ctx->commands, cmd)) == NULL)
+        {
+          printf ("Command `%s' not found\n", cmd);
+          return;
+        }
+      if (command->nparams > nparams)
+        {
+          printf ("Command `%s' takes at least %d params. (%d given)\n",
+                  cmd, command->nparams, nparams);
+          return;
+        }
+      command->callback (ctx, command, params, nparams, NULL);
+    }
 }
 
 /* taningia xmpp client event callbacks */
 
 static int
-auth_cb (ta_xmpp_client_t *client, void *data)
+auth_cb (ta_xmpp_client_t *client, iks *pak, void *data)
 {
   iks *node;
+  ps_ctx_t *ctx = (ps_ctx_t *) data;
 
   /* Sending presence info */
   node = iks_make_pres (IKS_SHOW_AVAILABLE, "Online");
   ta_xmpp_client_send (client, node);
   iks_delete (node);
 
-  /* executing requested command */
-
+  /* Starting reading the first command */
+  read_command (ctx);
   return 0;
 }
 
 static int
-auth_failed_cb (ta_xmpp_client_t *client, void *data)
+auth_failed_cb (ta_xmpp_client_t *client, iks *pak, void *data)
 {
+  printf ("Authentication failed. Username or password are wrong\n");
   ta_xmpp_client_disconnect (client);
   return 0;
 }
@@ -418,39 +484,6 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
   _register_cmd (ctx, "subscriptions", 1, cmd_subscriptions);
 }
 
-static char *
-gen_ps1 (ps_ctx_t *ctx)
-{
-  char *ps1 = NULL;
-  size_t len, total;
-
-  /* Initial size */
-  total = len = strlen (ctx->from);
-
-  /* This +3 reserve space to the `> \0' last chars */
-  ps1 = xmalloc (len+3);
-
-  memcpy (ps1, ctx->from, len);
-  ps1[len++] = ':';
-
-  if (ctx->cwd)
-    {
-      char *p, *s, *tmp;
-      /* Saving current end of string */
-      total = len + strlen (ctx->cwd);
-      tmp = xrealloc (ps1, total + 3);
-      ps1 = tmp;
-      s = ps1 + len;
-      p = ctx->cwd;
-      for (; *p != '\0'; *s++ = *p++);
-    }
-
-  ps1[total++] = '>';
-  ps1[total++] = ' ';
-  ps1[total] = '\0';
-  return ps1;
-}
-
 int
 main (int argc, char **argv)
 {
@@ -495,46 +528,18 @@ main (int argc, char **argv)
       exit (EXIT_FAILURE);
     }
 
+  /* Initializing the app context */
   ctx = xmalloc (sizeof (ps_ctx_t));
   ctx->xmpp = ta_xmpp_client_new (jid, password, addr, port);
-
-  ta_xmpp_client_event_connect (ctx->xmpp, "authenticated",
-                                (ta_xmpp_client_hook_t) auth_cb,
-                                NULL);
-
-  ta_xmpp_client_event_connect (ctx->xmpp, "authentication-failed",
-                                (ta_xmpp_client_hook_t) auth_failed_cb,
-                                NULL);
-
-  logger = ta_xmpp_client_get_logger (ctx->xmpp);
-  ta_log_set_use_colors (logger, 1);
-  ta_log_set_level (logger, TA_LOG_WARN);
-
   ctx->cwd = NULL;
   ctx->oldcwd = NULL;
   ctx->from = jid;
   ctx->to = service;
   ctx->commands = hashtable_create (hash_string, string_equal, NULL, free);
   ps_ctx_register_commands (ctx);
-
-  if (!ta_xmpp_client_connect (ctx->xmpp))
-    {
-      ta_error_t *error;
-      error = ta_xmpp_client_get_error (ctx->xmpp);
-      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
-               ta_error_get_message (error));
-      ta_object_unref (error);
-      goto finalize;
-    }
-  if (!ta_xmpp_client_run (ctx->xmpp, 1))
-    {
-      ta_error_t *error;
-      error = ta_xmpp_client_get_error (ctx->xmpp);
-      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
-               ta_error_get_message (error));
-      ta_object_unref (error);
-      goto finalize;
-    }
+  logger = ta_xmpp_client_get_logger (ctx->xmpp);
+  ta_log_set_use_colors (logger, 1);
+  ta_log_set_level (logger, TA_LOG_WARN);
 
   /* Initializing history library and registering a callback to write
    * back to history file when program finishes. */
@@ -544,72 +549,40 @@ main (int argc, char **argv)
   atexit (save_history_file);
   free (hfile);
 
-  while (1)
+  ta_xmpp_client_event_connect (ctx->xmpp, "authenticated",
+                                (ta_xmpp_client_hook_t) auth_cb,
+                                ctx);
+
+  ta_xmpp_client_event_connect (ctx->xmpp, "authentication-failed",
+                                (ta_xmpp_client_hook_t) auth_failed_cb,
+                                NULL);
+
+  /* Connecting and running xmpp client */
+  if (!ta_xmpp_client_connect (ctx->xmpp))
     {
-      char *ps1 = NULL;
-      char *line;
-      size_t llen;
-
-      /* Vars used to parse command line */
-      char *cmd = NULL;
-      char **params = NULL;
-      int nparams;
-
-      /* Every shell needs to have a pretty PS1 */
-      if ((ps1 = gen_ps1 (ctx)) == NULL)
-        ps1 = strdup (DEFAULT_PS1);
-
-      /* Main readline call.*/
-      line = readline (ps1);
-      free (ps1);
-
-      if (line == NULL)
-        {
-          printf ("\n");
-          break;
-        }
-      if ((llen = strlen (line)) == 0)
-        continue;
-
-      /* Saving readline history */
-      add_history (line);
-
-      if (!bitu_util_extract_params (line, &cmd, &params, &nparams))
-        continue;
-      else
-        {
-          ps_command_t *command;
-          char *msg;
-          if ((command = hashtable_get (ctx->commands, cmd)) == NULL)
-            {
-              printf ("Command `%s' not found\n", cmd);
-              continue;
-            }
-          if (command->nparams > nparams)
-            {
-              printf ("Command `%s' takes at least %d params. (%d given)\n",
-                      cmd, command->nparams, nparams);
-              continue;
-            }
-          if ((msg = command->callback (ctx, command, params, nparams, NULL))
-              != NULL)
-            {
-              printf ("%s", msg);
-              free (msg);
-            }
-        }
-
-      /* A little (hammer) timeout to wait the command to run. If the
-       * server does not answer, we'll not leave this loop and it is
-       * not good. */
-      while (command_running)
-        sleep (0.5);
+      ta_error_t *error;
+      error = ta_xmpp_client_get_error (ctx->xmpp);
+      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
+               ta_error_get_message (error));
+      ta_object_unref (error);
+      goto finalize;
     }
+  if (!ta_xmpp_client_run (ctx->xmpp, 0))
+    {
+      ta_error_t *error;
+      error = ta_xmpp_client_get_error (ctx->xmpp);
+      fprintf (stderr, "%s: %s\n", ta_error_get_name (error),
+               ta_error_get_message (error));
+      ta_object_unref (error);
+      goto finalize;
+    }
+  return 0;
 
+  /* Things went bad when setting up the XMPP client, let's free
+   * allocated stuff and get out with an error. */
  finalize:
   ta_object_unref (ctx->xmpp);
   hashtable_destroy (ctx->commands);
   free (ctx);
-
-  return 0;
+  return 1;
 }
