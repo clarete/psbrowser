@@ -110,6 +110,7 @@ parse_list (ta_xmpp_client_t *client, iks *node, void *data)
       item = iks_next (item);
     }
 
+  free (data);
   command_running = 0;
 }
 
@@ -135,7 +136,7 @@ cmd_list (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
     name = strdup (ctx->cwd);
 
   info = ta_pubsub_node_query_nodes (ctx->from, ctx->to, name);
-  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, free);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, info, parse_list, name, NULL);
   iks_delete (info);
   command_running = 1;
   return NULL;
@@ -232,7 +233,7 @@ cmd_subscriptions (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
                    int nparams, void *data)
 {
   iks *iq;
-  char *node, *jid;
+  char *node;
   node = params[0];
   iq = ta_pubsub_node_query_subscriptions (ctx->from, ctx->to, node);
   ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_subscriptions,
