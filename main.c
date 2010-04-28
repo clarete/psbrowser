@@ -428,12 +428,14 @@ read_command (ps_ctx_t *ctx)
       if ((command = hashtable_get (ctx->commands, cmd)) == NULL)
         {
           printf ("Command `%s' not found\n", cmd);
+          read_command (ctx);
           return;
         }
       if (command->nparams > nparams)
         {
           printf ("Command `%s' takes at least %d params. (%d given)\n",
                   cmd, command->nparams, nparams);
+          read_command (ctx);
           return;
         }
       command->callback (ctx, command, params, nparams, NULL);
