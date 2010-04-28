@@ -395,7 +395,7 @@ read_command (ps_ctx_t *ctx)
       return;
     }
   if ((llen = strlen (line)) == 0)
-    return;
+    read_command (ctx);
 
   /* Saving readline history */
   add_history (line);
