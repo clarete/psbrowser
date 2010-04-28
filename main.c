@@ -83,6 +83,27 @@ xrealloc (void *ptr, size_t size)
   return ret;
 }
 
+/* generic answer parser callback */
+static void
+parse_answer (ta_xmpp_client_t *client, iks *node, void *data)
+{
+  ps_ctx_t *ctx = (ps_ctx_t *) data;
+
+  /* Handling any possible error */
+  if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
+    {
+      /* Traversiong to iq > query > error and looking for the
+       * `item-not-found' node. */
+      iks *error = iks_find (node, "error");
+      if (error)
+        {
+          char *err = iks_string (NULL, error);
+          fprintf (stderr, "%s\n", err);
+        }
+    }
+  read_command (ctx);
+}
+
 /* commands */
 
 static void
@@ -151,9 +172,8 @@ cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   iks *iq;
   iq = ta_pubsub_node_create (ctx->from, ctx->to, params[0],
                               "type", "collection", NULL);
-  ta_xmpp_client_send (ctx->xmpp, iq);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_answer, ctx, NULL);
   iks_delete (iq);
-  read_command (ctx);
 }
 
 static void
@@ -162,29 +182,8 @@ cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
 {
   iks *iq;
   iq = ta_pubsub_node_delete (ctx->from, ctx->to, params[0]);
-  ta_xmpp_client_send (ctx->xmpp, iq);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_answer, ctx, NULL);
   iks_delete (iq);
-  read_command (ctx);
-}
-
-static void
-parse_subscribe (ta_xmpp_client_t *client, iks *node, void *data)
-{
-  ps_ctx_t *ctx = (ps_ctx_t *) data;
-
-  /* Handling any possible error */
-  if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
-    {
-      /* Traversiong to iq > query > error and looking for the
-       * `item-not-found' node. */
-      iks *error = iks_find (node, "error");
-      if (error)
-        {
-          char *err = iks_string (NULL, error);
-          fprintf (stderr, "%s\n", err);
-        }
-    }
-  read_command (ctx);
 }
 
 static void
@@ -199,7 +198,7 @@ cmd_subscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   else if (nparams == 2)
     jid = params[1];
   iq = ta_pubsub_node_subscribe (ctx->from, ctx->to, node, jid);
-  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_subscribe, ctx, NULL);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_answer, ctx, NULL);
   iks_delete (iq);
 }
 
@@ -215,9 +214,8 @@ cmd_unsubscribe (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   else if (nparams == 2)
     jid = params[1];
   iq = ta_pubsub_node_unsubscribe (ctx->from, ctx->to, node, jid);
-  ta_xmpp_client_send (ctx->xmpp, iq);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_answer, ctx, NULL);
   iks_delete (iq);
-  read_command (ctx);
 }
 
 static void
