@@ -32,10 +32,12 @@
 #include "hashtable-utils.h"
 
 #define DEFAULT_PS1 "> "
+#define VERSION     "0.1"
 
 struct ps_command
 {
   const char *name;
+  const char *doc;
   int nparams;
   ps_callback_t callback;
 };
@@ -331,6 +333,24 @@ cmd_pwd (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
   read_command (ctx);
 }
 
+static void
+cmd_help (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+          int nparams, void *data)
+{
+  void *iter;
+  printf ("PsBrowser v" VERSION ", available commands:\n");
+  iter = hashtable_iter (ctx->commands);
+  while (iter)
+    {
+      printf (" %-16s : %s\n",
+              (char *) hashtable_iter_key (iter),
+              ((ps_command_t *) hashtable_iter_value (iter))->doc);
+      iter = hashtable_iter_next (ctx->commands, iter);
+    }
+  read_command (ctx);
+}
+
+
 /* little helper function to generate a pretty PS1 like value to feed
  * the readline() call. */
 
@@ -480,11 +500,13 @@ save_history_file (void)
 }
 
 static inline void
-_register_cmd (ps_ctx_t *ctx, const char *name, int nparams, ps_callback_t cb)
+_register_cmd (ps_ctx_t *ctx, const char *name, const char *doc, int nparams,
+               ps_callback_t cb)
 {
   ps_command_t *cmd;
   cmd = xmalloc (sizeof (ps_command_t));
   cmd->name = name;
+  cmd->doc = doc;
   cmd->nparams = nparams;
   cmd->callback = cb;
   hashtable_set (ctx->commands, (void *) name, cmd);
@@ -493,14 +515,19 @@ _register_cmd (ps_ctx_t *ctx, const char *name, int nparams, ps_callback_t cb)
 static void
 ps_ctx_register_commands (ps_ctx_t *ctx)
 {
-  _register_cmd (ctx, "ls", 0, cmd_list);
-  _register_cmd (ctx, "cd", 0, cmd_cd);
-  _register_cmd (ctx, "pwd", 0, cmd_pwd);
-  _register_cmd (ctx, "rm", 1, cmd_delete);
-  _register_cmd (ctx, "mkdir", 1, cmd_mkdir);
-  _register_cmd (ctx, "subscribe", 1, cmd_subscribe);
-  _register_cmd (ctx, "unsubscribe", 1, cmd_unsubscribe);
-  _register_cmd (ctx, "subscriptions", 1, cmd_subscriptions);
+  _register_cmd (ctx, "help", "Lists all available commands", 0, cmd_help);
+  _register_cmd (ctx, "ls", "Lists nodes in a sub node", 0, cmd_list);
+  _register_cmd (ctx, "cd", "Changes the working node", 0, cmd_cd);
+  _register_cmd (ctx, "pwd", "Shows wich node is selected", 0, cmd_pwd);
+  _register_cmd (ctx, "rm", "Removes a node", 1, cmd_delete);
+  _register_cmd (ctx, "mkdir", "Creates a collection node", 1, cmd_mkdir);
+  _register_cmd (ctx, "subscribe", "Subscribes the connected JID to a node", 1,
+                 cmd_subscribe);
+  _register_cmd (ctx, "unsubscribe",
+                 "Unsubscribes the connected JID from a node", 1,
+                 cmd_unsubscribe);
+  _register_cmd (ctx, "subscriptions", "List all JID's subscripted to a node",
+                 1, cmd_subscriptions);
 }
 
 int
