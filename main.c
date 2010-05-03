@@ -262,6 +262,47 @@ cmd_subscriptions (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
 }
 
 static void
+parse_affiliations (ta_xmpp_client_t *client, iks *node, void *data)
+{
+  iks *item;
+  ps_ctx_t *ctx = (ps_ctx_t *) data;
+
+  /* Handling any possible error */
+  if (strcmp (iks_find_attrib (node, "type"), "error") == 0)
+    {
+      /* Traversiong to iq > query > error and looking for the
+       * `item-not-found' node. */
+      if (iks_find (iks_find (node, "error"), "item-not-found"))
+        fprintf (stderr, "Node not found\n");
+      goto end;
+    }
+
+  /* Traversing to iq > pubsub > subscriptions > subscription and then
+   * iterating over its (item) siblings. */
+  item = iks_child (iks_child (iks_child (node)));
+  while (item)
+    {
+      printf ("%s (%s)\n",
+              iks_find_attrib (item, "node"),
+              iks_find_attrib (item, "affiliation"));
+      item = iks_next (item);
+    }
+ end:
+  read_command (ctx);
+}
+
+static void
+cmd_affiliations (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+                  int nparams, void *data)
+{
+  iks *iq;
+  iq = ta_pubsub_query_affiliations (ctx->from, ctx->to);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_affiliations, ctx,
+                                  NULL);
+  iks_delete (iq);
+}
+
+static void
 parse_cd_query (ta_xmpp_client_t *client, iks *node, void *data)
 {
   ps_ctx_t *ctx = (ps_ctx_t *) data;
@@ -528,6 +569,9 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
                  cmd_unsubscribe);
   _register_cmd (ctx, "subscriptions", "List all JID's subscripted to a node",
                  1, cmd_subscriptions);
+  _register_cmd (ctx, "affiliations", "Lists all nodes that the loged user "
+                 "is affiliated to and the affiliation type", 0,
+                 cmd_affiliations);
 }
 
 int
