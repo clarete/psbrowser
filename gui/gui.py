@@ -30,15 +30,19 @@ class MainWindow(gtk.Builder):
         super(MainWindow, self).__init__()
         self.add_from_file('psbrowser.ui')
 
+        # Logging setup
         self.logger = taningia.log.Log('pypsbrowser')
         self.logger.set_level(taningia.log.TA_LOG_DEBUG)
         self.logger.set_use_colors(True)
-        self.is_loading = 0
 
         # Some important widgets
         self.mwin = self.get_object('mainWindow')
         self.treeview = self.get_object('treeview')
         self.loading = self.get_object('imageLoading')
+
+        # Loading flag. Call self.{ref,unref}_loading to manage it,
+        # don't do it directly.
+        self.is_loading = 0
 
         # Setting up xmpp stuff
         self.xmpp = taningia.xmpp.Client(
