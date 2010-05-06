@@ -4,8 +4,9 @@
   <!-- interface-naming-policy project-wide -->
   <object class="GtkDialog" id="loginDialog">
     <property name="border_width">5</property>
+    <property name="title" translatable="yes">Pubsub Browser</property>
     <property name="resizable">False</property>
-    <property name="window_position">center-always</property>
+    <property name="window_position">center</property>
     <property name="type_hint">normal</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
@@ -24,12 +25,14 @@
                 <property name="visible">True</property>
                 <child>
                   <object class="GtkLabel" id="label1">
-                    <property name="width_request">120</property>
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">JID:</property>
+                    <property name="label" translatable="yes">_JID:</property>
+                    <property name="use_underline">True</property>
+                    <property name="mnemonic_widget">jidEntry</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -57,9 +60,13 @@
                     <property name="width_request">120</property>
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Password:</property>
+                    <property name="ypad">3</property>
+                    <property name="label" translatable="yes">_Password:</property>
+                    <property name="use_underline">True</property>
+                    <property name="mnemonic_widget">passwordEntry</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -100,10 +107,12 @@
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkLabel" id="label4">
-                                <property name="width_request">110</property>
+                                <property name="width_request">100</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Host:</property>
+                                <property name="label" translatable="yes">_Host:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">hostEntry</property>
                               </object>
                               <packing>
                                 <property name="position">0</property>
@@ -130,10 +139,11 @@
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkLabel" id="label5">
-                                <property name="width_request">110</property>
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Port:</property>
+                                <property name="label" translatable="yes">_Port:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">portEntry</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -164,7 +174,7 @@
                 <child type="label">
                   <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Custom server info&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Custom connection info&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                   </object>
                 </child>
@@ -229,5 +239,17 @@
     <property name="upper">9999</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
+  </object>
+  <object class="GtkSizeGroup" id="entrySizeGroup">
+    <widgets>
+      <widget name="label2"/>
+      <widget name="label1"/>
+    </widgets>
+  </object>
+  <object class="GtkSizeGroup" id="entrySizeGroup2">
+    <widgets>
+      <widget name="label5"/>
+      <widget name="label4"/>
+    </widgets>
   </object>
 </interface>
