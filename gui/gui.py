@@ -45,6 +45,8 @@ class MainWindow(gtk.Builder):
         self.is_loading = 0
 
         # Setting up xmpp stuff
+        self.jid_from = ctx.get('jid')
+        self.jid_to = ctx.get('pservice')
         self.xmpp = taningia.xmpp.Client(
             ctx.get('jid'), ctx.get('password'),
             ctx.get('host'), ctx.get('port'))
@@ -139,7 +141,10 @@ def main():
     ctx['jid'] = login.get_val('jidEntry')
     ctx['password'] = login.get_val('passwordEntry')
     ctx['host'] = login.get_val('hostEntry')
-    ctx['port'] = int(login.get_val('portEntry')) or 5222
+    ctx['pservice'] = login.get_val('pserviceEntry') \
+        or 'pubsub.%s' % ctx['host']
+    ctx['port'] = int(login.get_val('portEntry')) \
+        or 5222
     mwin = MainWindow(ctx)
     mwin.run()
 
