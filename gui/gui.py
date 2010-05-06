@@ -30,6 +30,9 @@ class MainWindow(gtk.Builder):
         super(MainWindow, self).__init__()
         self.add_from_file('psbrowser.ui')
 
+        self.logger = taningia.log.Log('pypsbrowser')
+        self.logger.set_level(taningia.log.TA_LOG_DEBUG)
+        self.logger.set_use_colors(True)
         self.is_loading = 0
 
         # Some important widgets
@@ -43,6 +46,8 @@ class MainWindow(gtk.Builder):
             ctx.get('host'), ctx.get('port'))
         self.xmpp.event_connect('authenticated', self.auth_cb)
         self.xmpp.event_connect('authentication-failed', self.auth_failed_cb)
+        self.xmpp.get_logger().set_level(taningia.log.TA_LOG_DEBUG)
+        self.xmpp.get_logger().set_use_colors(True)
 
         # Setting up some ui stuff
         self.loading.set_from_file('data/pixmaps/loading.gif')
@@ -93,11 +98,12 @@ class MainWindow(gtk.Builder):
         gtk.main()
 
     def auth_cb(self, *nil):
-        print 'auth'
+        self.logger.info('Auth callback running')
         self.unref_loading()
 
     def auth_failed_cb(self, *nil):
-        print 'nauth'
+        self.logger.info('Auth failed callback running')
+        self.unref_loading()
 
 class LoginForm(gtk.Builder):
 
