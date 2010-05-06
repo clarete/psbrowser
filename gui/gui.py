@@ -123,6 +123,9 @@ class LoginForm(gtk.Builder):
     def run(self):
         return self.get_object('loginDialog').run()
 
+    def destroy(self):
+        return self.get_object('loginDialog').destroy()
+
 def main():
     import sys
 
@@ -145,6 +148,9 @@ def main():
         or 'pubsub.%s' % ctx['host']
     ctx['port'] = int(login.get_val('portEntry')) \
         or 5222
+
+    login.destroy()
+
     mwin = MainWindow(ctx)
     mwin.run()
 
