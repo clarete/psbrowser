@@ -25,6 +25,37 @@ from threading import Thread
 
 gobject.threads_init()
 
+class Loading(gtk.Image):
+    def __init__(self):
+        super(Loading, self).__init__()
+
+        # Loading flag. Call self.{ref,unref}_loading to manage it,
+        # don't do it directly.
+        self._is_loading = 0
+        self.set_from_file('data/pixmaps/loading.gif')
+
+    def _handle_loading(self):
+        """Changes the visibility property of our `loading' image
+        based on the `self.is_loading' flag. This is important because
+        more than one action can request to show/hide it at the same
+        time.
+        """
+        self.set_visible(self._is_loading > 0)
+
+    def ref_loading(self):
+        """Increment the loading request and call the loading
+        show/hide function.
+        """
+        self._is_loading += 1
+        self._handle_loading()
+
+    def unref_loading(self):
+        """Decrement the loading request and call the loading
+        show/hide function.
+        """
+        self._is_loading = max(0, self._is_loading - 1)
+        self._handle_loading()
+
 class MainWindow(gtk.Builder):
     def __init__(self, ctx):
         super(MainWindow, self).__init__()
@@ -39,11 +70,8 @@ class MainWindow(gtk.Builder):
         self.mwin = self.get_object('mainWindow')
         self.treeview = self.get_object('treeview')
         self.setup_treeview()
-        self.loading = self.get_object('imageLoading')
-
-        # Loading flag. Call self.{ref,unref}_loading to manage it,
-        # don't do it directly.
-        self.is_loading = 0
+        self.loading = Loading()
+        self.get_object('hboxTop').pack_end(self.loading, 0, 0, 0)
 
         # Setting up xmpp stuff
         self.jid_from = ctx.get('jid')
@@ -57,7 +85,6 @@ class MainWindow(gtk.Builder):
         self.xmpp.get_logger().set_use_colors(True)
 
         # Setting up some ui stuff
-        self.loading.set_from_file('data/pixmaps/loading.gif')
         eventbox = self.get_object('titleEventbox')
         eventbox.modify_bg(gtk.STATE_NORMAL,
                            eventbox.get_colormap().alloc_color("#ffffff"))
@@ -69,28 +96,6 @@ class MainWindow(gtk.Builder):
         renderer = gtk.CellRendererText()
         column = gtk.TreeViewColumn('Node', renderer, text=0)
         self.treeview.append_column(column)
-
-    def handle_loading(self):
-        """Changes the visibility property of our `loading' image
-        based on the `self.is_loading' flag. This is important because
-        more than one action can request to show/hide it at the same
-        time.
-        """
-        self.loading.set_visible(self.is_loading > 0)
-
-    def ref_loading(self):
-        """Increment the loading request and call the loading
-        show/hide function.
-        """
-        self.is_loading += 1
-        self.handle_loading()
-
-    def unref_loading(self):
-        """Decrement the loading request and call the loading
-        show/hide function.
-        """
-        self.is_loading = max(0, self.is_loading - 1)
-        self.handle_loading()
 
     def quit(self, *nil):
         """Disconnects the xmpp client from the server and quit the
@@ -106,17 +111,17 @@ class MainWindow(gtk.Builder):
         self.mwin.show_all()
         self.xmpp.connect()
         self.xmpp.run(True)
-        self.ref_loading()
+        self.loading.ref_loading()
         gtk.main()
 
     def auth_cb(self, *nil):
         self.logger.info('Auth callback running')
-        self.unref_loading()
+        self.loading.unref_loading()
         self.list_nodes()
 
     def auth_failed_cb(self, *nil):
         self.logger.info('Auth failed callback running')
-        self.unref_loading()
+        self.loading.unref_loading()
 
     # pubsub stuff
 
@@ -131,6 +136,7 @@ class MainWindow(gtk.Builder):
             node_iter = model.append(parent_iter, [node_name])
             self.list_nodes(node_name, node_iter)
             node = node.next()
+        self.loading.unref_loading()
 
     def list_nodes(self, node_name=None, node_iter=None):
         args = (self.jid_from, self.jid_to)
@@ -141,6 +147,7 @@ class MainWindow(gtk.Builder):
         iq = taningia.pubsub.node_query_nodes(*args)
         self.xmpp.send_and_filter(iq, self.parse_list_nodes,
                                   (node_name, node_iter))
+        self.loading.ref_loading()
 
 class LoginForm(gtk.Builder):
 

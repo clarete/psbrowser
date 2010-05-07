@@ -20,7 +20,7 @@
           <object class="GtkEventBox" id="titleEventbox">
             <property name="visible">True</property>
             <child>
-              <object class="GtkHBox" id="hbox1">
+              <object class="GtkHBox" id="hboxTop">
                 <property name="visible">True</property>
                 <property name="border_width">8</property>
                 <property name="spacing">6</property>
@@ -77,16 +77,6 @@
                   </object>
                   <packing>
                     <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkImage" id="imageLoading">
-                    <property name="no_show_all">True</property>
-                    <property name="stock">gtk-missing-image</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
