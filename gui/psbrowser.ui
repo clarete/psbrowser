@@ -2,6 +2,12 @@
 <interface>
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
+  <object class="GtkTreeStore" id="treestore">
+    <columns>
+      <!-- column-name node -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="mainWindow">
     <property name="window_position">center</property>
     <property name="default_width">640</property>
@@ -135,11 +141,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkTreeStore" id="treestore">
-    <columns>
-      <!-- column-name node -->
-      <column type="gchararray"/>
-    </columns>
   </object>
 </interface>
