@@ -112,10 +112,41 @@ class MainWindow(gtk.Builder):
     def auth_cb(self, *nil):
         self.logger.info('Auth callback running')
         self.unref_loading()
+        self.list_nodes()
 
     def auth_failed_cb(self, *nil):
         self.logger.info('Auth failed callback running')
         self.unref_loading()
+
+    def update_node_list(self, nodes, parent_name, parent_iter):
+        model = self.treeview.get_model()
+        model.clear()
+        for node in nodes:
+            appended = model.append(parent_iter, [node])
+            print node, parent_name, parent_iter
+            self.list_nodes(node, appended)
+            break
+
+    # pubsub stuff
+
+    def parse_list_nodes(self, stanza, user_data):
+        nodes = []
+        node = stanza.find('query').child()
+        while node is not None:
+            nodes.append(node.find_attrib('node'))
+            node = node.next()
+        node_name, node_iter = user_data
+        self.update_node_list(nodes, node_name, node_iter)
+
+    def list_nodes(self, node_name=None, node_iter=None):
+        args = (self.jid_from, self.jid_to)
+        parent_info = node_name or 'root'
+        self.logger.info('Listing nodes from %s' % parent_info)
+        if node_name is not None:
+            args += (node_name,)
+        iq = taningia.pubsub.node_query_nodes(*args)
+        self.xmpp.send_and_filter(iq, self.parse_list_nodes,
+                                  (node_name, node_iter))
 
 class LoginForm(gtk.Builder):
 
@@ -137,7 +168,8 @@ def main():
 
     if '-d' in sys.argv:
         ctx = {'jid': 'admin@localhost', 'password': 'admin',
-               'host': '127.0.0.1', 'port': 5222}
+               'pservice': 'pubsub.localhost', 'host': '127.0.0.1',
+               'port': 5222}
         mwin = MainWindow(ctx)
         mwin.run()
         return
