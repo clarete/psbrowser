@@ -21,6 +21,7 @@
                 <child>
                   <object class="GtkImage" id="image1">
                     <property name="visible">True</property>
+                    <property name="xpad">4</property>
                     <property name="stock">gtk-open</property>
                     <property name="icon-size">6</property>
                   </object>
@@ -112,9 +113,10 @@
                 <property name="vscrollbar_policy">automatic</property>
                 <property name="shadow_type">in</property>
                 <child>
-                  <object class="GtkTreeView" id="treeview1">
+                  <object class="GtkTreeView" id="treeview">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="model">treestore</property>
                   </object>
                 </child>
               </object>
@@ -133,5 +135,11 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkTreeStore" id="treestore">
+    <columns>
+      <!-- column-name node -->
+      <column type="gchararray"/>
+    </columns>
   </object>
 </interface>

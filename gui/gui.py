@@ -38,6 +38,7 @@ class MainWindow(gtk.Builder):
         # Some important widgets
         self.mwin = self.get_object('mainWindow')
         self.treeview = self.get_object('treeview')
+        self.setup_treeview()
         self.loading = self.get_object('imageLoading')
 
         # Loading flag. Call self.{ref,unref}_loading to manage it,
@@ -63,6 +64,11 @@ class MainWindow(gtk.Builder):
 
         # Setting up signals
         self.mwin.connect('delete-event', self.quit)
+
+    def setup_treeview(self):
+        renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Node', renderer, text=0)
+        self.treeview.append_column(column)
 
     def handle_loading(self):
         """Changes the visibility property of our `loading' image
