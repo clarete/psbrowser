@@ -69,7 +69,8 @@ class MainWindow(gtk.Builder):
         # Some important widgets
         self.mwin = self.get_object('mainWindow')
         self.treeview = self.get_object('treeview')
-        self.setup_treeview()
+        self.treeviewp = self.get_object('treeviewPosts')
+        self.setup_treeviews()
         self.loading = Loading()
         self.get_object('hboxTop').pack_end(self.loading, 0, 0, 0)
 
@@ -92,10 +93,20 @@ class MainWindow(gtk.Builder):
         # Setting up signals
         self.mwin.connect('delete-event', self.quit)
 
-    def setup_treeview(self):
+    def setup_treeviews(self):
+        """Sets up renderers and columns for both node and post
+        treeviews.
+        """
+        # node tree setup
         renderer = gtk.CellRendererText()
         column = gtk.TreeViewColumn('Node', renderer, text=0)
         self.treeview.append_column(column)
+        self.treeview.connect('row-activated', self.list_posts)
+
+        # post tree setup
+        renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Post', renderer, text=0)
+        self.treeviewp.append_column(column)
 
     def quit(self, *nil):
         """Disconnects the xmpp client from the server and quit the
@@ -124,6 +135,35 @@ class MainWindow(gtk.Builder):
         self.loading.unref_loading()
 
     # pubsub stuff
+
+    def parse_list_posts(self, stanza, user_data):
+        # traversing to iq > pubsub > items > <first-item>
+        node = stanza.child().child().child()
+        model = self.treeviewp.get_model()
+        model.clear()
+
+        # If there is any item published in the selected node, we list
+        # it in the treeviewPosts widget.
+        while node:
+            # Iterate over the nodes found and append them to the
+            # treeviewPosts model.
+
+            # Load the content to an atom entry.
+            #model.append([node.find_attrib()])
+            node = node.next()
+        self.loading.unref_loading()
+
+    def list_posts(self, treeview, path, column):
+        model = treeview.get_model()
+        giter = model.get_iter(path)
+        node = model.get_value(giter, 0)
+
+        # TODO: Inform the user about which node is selected
+
+        # Sending the listing request
+        iq = taningia.pubsub.node_items(self.jid_from, self.jid_to, node, 0)
+        self.xmpp.send_and_filter(iq, self.parse_list_posts)
+        self.loading.ref_loading()
 
     def parse_list_nodes(self, stanza, user_data):
         model = self.treeview.get_model()
