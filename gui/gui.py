@@ -28,8 +28,36 @@ that provides an easy to use XMPP/Pubsub API.
 import gtk
 import gobject
 import taningia
+import sys
 
 gobject.threads_init()
+
+def report_error(title, msg, parent=None, exit_code=-1):
+    """A function that shows an error message box.
+    """
+    dialog = gtk.MessageDialog(parent=parent,
+                               type=gtk.MESSAGE_ERROR,
+                               buttons=gtk.BUTTONS_CLOSE)
+    dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+    dialog.set_markup('<b><big>%s</big></b>' % title)
+    dialog.format_secondary_markup(msg)
+    dialog.show()
+    dialog.run()
+    dialog.destroy()
+    if exit_code != -1:
+        sys.exit(exit_code)
+
+def iserror(stanza):
+    return stanza.find_attrib('type') == 'error'
+
+def errname(stanza):
+    try:
+        ename = stanza.find('error').child().name()
+    except AttributeError:
+        return None
+    ename = ename.replace('-', ' ')
+    ename = ename.capitalize()
+    return ename
 
 class Loading(gtk.Image):
     """An abstraction for a loading widget that is shown when some
@@ -85,6 +113,9 @@ class MainWindow(gtk.Builder):
         self.loading = Loading()
         self.get_object('hboxTop').pack_end(self.loading, 0, 0, 0)
 
+        # Path to be expanded after loading node tree
+        self.path_to_expand = ()
+
         # Setting up xmpp stuff
         self.jid_from = ctx.get('jid')
         self.jid_to = ctx.get('pservice')
@@ -104,6 +135,7 @@ class MainWindow(gtk.Builder):
         # Setting up signals
         self.mwin.connect('delete-event', self.quit)
         self.get_object('tbRefresh').connect('clicked', self.refresh_cb)
+        self.get_object('tbRemove').connect('clicked', self.remove_cb)
 
     def setup_treeviews(self):
         """Sets up renderers and columns for both node and post
@@ -159,6 +191,11 @@ class MainWindow(gtk.Builder):
         self.treeview.get_model().clear()
         self.list_nodes()
 
+    def remove_cb(self, *nil):
+        """Removes all selected nodes in the treeview.
+        """
+        self.remove_selected_node()
+
     # pubsub stuff
 
     def parse_list_posts(self, stanza, user_data):
@@ -201,6 +238,8 @@ class MainWindow(gtk.Builder):
             node_iter = model.append(parent_iter, [node_name])
             self.list_nodes(node_name, node_iter)
             node = node.next()
+        if self.path_to_expand:
+            self.treeview.expand_to_path(self.path_to_expand)
         self.loading.unref_loading()
 
     def list_nodes(self, node_name=None, node_iter=None):
@@ -213,6 +252,31 @@ class MainWindow(gtk.Builder):
         self.xmpp.send_and_filter(iq, self.parse_list_nodes,
                                   (node_name, node_iter))
         self.loading.ref_loading()
+
+    def parse_remove_node(self, stanza, user_data):
+        self.loading.unref_loading()
+        if iserror(stanza):
+            err = errname(stanza)
+            report_error(
+                'Could not remove selected node',
+                'The server returned the error <b>%s</b>' % err,
+                self.mwin)
+            self.logger.warn('Could note remove node %s: %s' %
+                             (user_data, err))
+        else:
+            self.refresh_cb()
+
+    def remove_selected_node(self, *nil):
+        selection = self.treeview.get_selection()
+        model, giter = selection.get_selected()
+        if giter:
+            # we have stuff selected =D
+            node = model.get_value(giter, 0)
+            iq = taningia.pubsub.node_delete(self.jid_from, self.jid_to, node)
+            self.xmpp.send_and_filter(iq, self.parse_remove_node, node)
+            self.path_to_expand = model.get_path(model.iter_parent(giter))
+            self.logger.info('Requesting to remove node %s' % node)
+            self.loading.ref_loading()
 
 class LoginForm(gtk.Builder):
     """Loads the login.ui file and show it to collect data to connect
@@ -233,8 +297,6 @@ class LoginForm(gtk.Builder):
         return self.get_object('loginDialog').destroy()
 
 def main():
-    import sys
-
     if '-d' in sys.argv:
         ctx = {'jid': 'admin@localhost', 'password': 'admin',
                'pservice': 'pubsub.localhost', 'host': '127.0.0.1',
