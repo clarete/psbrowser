@@ -18,6 +18,13 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+"""PsBrowser stands to Pubsub browser.
+
+This program aims to be a generic viewer of pubsub nodes in a service
+running on top of an XMPP server. We are using taningia[0] library
+that provides an easy to use XMPP/Pubsub API.
+"""
+
 import gtk
 import gobject
 import taningia
@@ -26,6 +33,11 @@ from threading import Thread
 gobject.threads_init()
 
 class Loading(gtk.Image):
+    """An abstraction for a loading widget that is shown when some
+    async job is running. You can use the .{un,}ref_loading() methods
+    to ask for showing or hidding it.
+    """
+
     def __init__(self):
         super(Loading, self).__init__()
 
@@ -125,12 +137,18 @@ class MainWindow(gtk.Builder):
         self.loading.ref_loading()
         gtk.main()
 
+    # Authentication callbacks
+
     def auth_cb(self, *nil):
+        """Called in successful logins.
+        """
         self.logger.info('Auth callback running')
         self.loading.unref_loading()
         self.list_nodes()
 
     def auth_failed_cb(self, *nil):
+        """Called in unsuccessful logins.
+        """
         self.logger.info('Auth failed callback running')
         self.loading.unref_loading()
 
@@ -190,6 +208,9 @@ class MainWindow(gtk.Builder):
         self.loading.ref_loading()
 
 class LoginForm(gtk.Builder):
+    """Loads the login.ui file and show it to collect data to connect
+    to a Pubsub service.
+    """
 
     def __init__(self):
         super(LoginForm, self).__init__()
