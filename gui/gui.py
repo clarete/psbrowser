@@ -103,6 +103,7 @@ class MainWindow(gtk.Builder):
 
         # Setting up signals
         self.mwin.connect('delete-event', self.quit)
+        self.get_object('tbRefresh').connect('clicked', self.refresh_cb)
 
     def setup_treeviews(self):
         """Sets up renderers and columns for both node and post
@@ -150,6 +151,13 @@ class MainWindow(gtk.Builder):
         """
         self.logger.info('Auth failed callback running')
         self.loading.unref_loading()
+
+    # Toolbar callbacks
+
+    def refresh_cb(self, *nil):
+        # Clearing node treeview before requesting the listing again.
+        self.treeview.get_model().clear()
+        self.list_nodes()
 
     # pubsub stuff
 

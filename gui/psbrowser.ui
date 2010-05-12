@@ -103,6 +103,63 @@
           </packing>
         </child>
         <child>
+          <object class="GtkToolbar" id="toolbar1">
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkToolButton" id="tbAdd">
+                <property name="visible">True</property>
+                <property name="tooltip_text" translatable="yes">Add a new node</property>
+                <property name="label" translatable="yes">Add Node</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-add</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="tbRemove">
+                <property name="visible">True</property>
+                <property name="tooltip_text" translatable="yes">Remove selected nodes</property>
+                <property name="label" translatable="yes">Remove Node</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-remove</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="tbSep1">
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="tbRefresh">
+                <property name="visible">True</property>
+                <property name="tooltip_text" translatable="yes">Refresh node tree</property>
+                <property name="label" translatable="yes">Refresh</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-refresh</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkHPaned" id="hpaned1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -121,6 +178,7 @@
                     <property name="can_focus">True</property>
                     <property name="model">treestore</property>
                     <property name="headers_visible">False</property>
+                    <property name="search_column">0</property>
                   </object>
                 </child>
               </object>
@@ -146,6 +204,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="model">liststore</property>
+                        <property name="search_column">0</property>
                       </object>
                     </child>
                   </object>
@@ -165,7 +224,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">2</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>
