@@ -28,7 +28,6 @@ that provides an easy to use XMPP/Pubsub API.
 import gtk
 import gobject
 import taningia
-from threading import Thread
 
 gobject.threads_init()
 
