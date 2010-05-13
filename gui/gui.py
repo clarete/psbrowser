@@ -136,6 +136,7 @@ class MainWindow(gtk.Builder):
         self.mwin.connect('delete-event', self.quit)
         self.get_object('tbRefresh').connect('clicked', self.refresh_cb)
         self.get_object('tbRemove').connect('clicked', self.remove_cb)
+        self.get_object('tbAdd').connect('clicked', self.newnode_cb)
 
     def setup_treeviews(self):
         """Sets up renderers and columns for both node and post
@@ -195,6 +196,13 @@ class MainWindow(gtk.Builder):
         """Removes all selected nodes in the treeview.
         """
         self.remove_selected_node()
+
+    def newnode_cb(self, *new):
+        """Calls the newnode form to create a new node.
+        """
+        nnf = NewNodeForm(self)
+        nnf.run()
+        nnf.destroy()
 
     # pubsub stuff
 
@@ -274,9 +282,42 @@ class MainWindow(gtk.Builder):
             node = model.get_value(giter, 0)
             iq = taningia.pubsub.node_delete(self.jid_from, self.jid_to, node)
             self.xmpp.send_and_filter(iq, self.parse_remove_node, node)
-            self.path_to_expand = model.get_path(model.iter_parent(giter))
+            parent = model.iter_parent(giter)
+            if parent:
+                self.path_to_expand = model.get_path(parent)
             self.logger.info('Requesting to remove node %s' % node)
             self.loading.ref_loading()
+
+class NewNodeForm(gtk.Builder):
+    """Loads the newnode.ui file, grab necessary info to create a new
+    node.
+    """
+    def __init__(self, main):
+        super(NewNodeForm, self).__init__()
+        self.add_from_file('newnode.ui')
+        self.main = main
+        self.get_object('mainDialog').set_transient_for(self.main.mwin)
+
+        # Connecting signals
+
+        self.get_object('nodeNameEntry').connect(
+            'changed', self.set_ok_sensitivity_cb)
+        self.get_object('btOk').connect(
+            'clicked', self.create_node_cb)
+
+    def run(self):
+        return self.get_object('mainDialog').run()
+
+    def destroy(self):
+        return self.get_object('mainDialog').destroy()
+
+    # callbacks
+
+    def set_ok_sensitivity_cb(self, entry):
+        self.get_object('btOk').set_sensitive(bool(entry.get_text().strip()))
+
+    def create_node_cb(self, button):
+        node = self.get_object('nodeNameEntry').get_text()
 
 class LoginForm(gtk.Builder):
     """Loads the login.ui file and show it to collect data to connect
