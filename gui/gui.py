@@ -288,6 +288,23 @@ class MainWindow(gtk.Builder):
             self.logger.info('Requesting to remove node %s' % node)
             self.loading.ref_loading()
 
+    def parse_add_node(self, stanza, user_data):
+        self.loading.unref_loading()
+        if iserror(stanza):
+            err = errname(stanza)
+            report_error(
+                'Node `%s\' was not created' % user_data,
+                'The server returned the error <b>%s</b>' % err,
+                self.mwin)
+        else:
+            self.refresh_cb()
+
+    def add_node(self, node, ntype):
+        params = self.jid_from, self.jid_to, node, {'type': ntype}
+        iq = taningia.pubsub.node_create(*params)
+        self.xmpp.send_and_filter(iq, self.parse_add_node, node)
+        self.loading.ref_loading()
+
 class NewNodeForm(gtk.Builder):
     """Loads the newnode.ui file, grab necessary info to create a new
     node.
@@ -306,7 +323,12 @@ class NewNodeForm(gtk.Builder):
             'clicked', self.create_node_cb)
 
     def run(self):
-        return self.get_object('mainDialog').run()
+        if self.get_object('mainDialog').run() == 1:
+            is_leaf = self.get_object('rbTypeLeaf').get_active()
+            node_type = is_leaf and 'leaf' or 'collection'
+            self.main.add_node(
+                self.get_object('nodeNameEntry').get_text(),
+                node_type)
 
     def destroy(self):
         return self.get_object('mainDialog').destroy()
