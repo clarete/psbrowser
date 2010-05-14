@@ -175,6 +175,7 @@ class MainWindow(gtk.Builder):
     def auth_cb(self, *nil):
         """Called in successful logins.
         """
+        self.mwin.set_title('PsBrowser - %s' % self.jid_from)
         self.logger.info('Auth callback running')
         self.loading.unref_loading()
         self.list_nodes()

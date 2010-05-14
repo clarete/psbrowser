@@ -15,6 +15,7 @@
     </columns>
   </object>
   <object class="GtkWindow" id="mainWindow">
+    <property name="title" translatable="yes">PsBrowser</property>
     <property name="window_position">center</property>
     <property name="default_width">640</property>
     <property name="default_height">480</property>
