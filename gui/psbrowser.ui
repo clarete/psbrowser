@@ -133,6 +133,19 @@
               </packing>
             </child>
             <child>
+              <object class="GtkToolButton" id="tbRefresh">
+                <property name="visible">True</property>
+                <property name="tooltip_text" translatable="yes">Refresh node tree</property>
+                <property name="label" translatable="yes">Refresh</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-refresh</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkSeparatorToolItem" id="tbSep1">
                 <property name="visible">True</property>
               </object>
@@ -142,12 +155,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToolButton" id="tbRefresh">
+              <object class="GtkToolButton" id="tbPublish">
                 <property name="visible">True</property>
-                <property name="tooltip_text" translatable="yes">Refresh node tree</property>
-                <property name="label" translatable="yes">Refresh</property>
+                <property name="tooltip_text" translatable="yes">Publish text</property>
+                <property name="label" translatable="yes">Publish text</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-refresh</property>
+                <property name="stock_id">gtk-new</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -167,7 +180,7 @@
             <property name="border_width">12</property>
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow1">
-                <property name="width_request">150</property>
+                <property name="width_request">260</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">automatic</property>

@@ -29,6 +29,8 @@ import gtk
 import gobject
 import taningia
 import sys
+import uuid
+from datetime import datetime
 
 gobject.threads_init()
 
@@ -137,6 +139,7 @@ class MainWindow(gtk.Builder):
         self.get_object('tbRefresh').connect('clicked', self.refresh_cb)
         self.get_object('tbRemove').connect('clicked', self.remove_cb)
         self.get_object('tbAdd').connect('clicked', self.newnode_cb)
+        self.get_object('tbPublish').connect('clicked', self.publish_cb)
 
     def setup_treeviews(self):
         """Sets up renderers and columns for both node and post
@@ -198,12 +201,17 @@ class MainWindow(gtk.Builder):
         """
         self.remove_selected_node()
 
-    def newnode_cb(self, *new):
+    def newnode_cb(self, *nil):
         """Calls the newnode form to create a new node.
         """
         nnf = NewNodeForm(self)
         nnf.run()
         nnf.destroy()
+
+    def publish_cb(self, *nil):
+        pub = PublishAtomForm(self)
+        pub.run()
+        #pub.destroy()
 
     # pubsub stuff
 
@@ -305,6 +313,86 @@ class MainWindow(gtk.Builder):
         iq = taningia.pubsub.node_create(*params)
         self.xmpp.send_and_filter(iq, self.parse_add_node, node)
         self.loading.ref_loading()
+
+class PublishAtomForm(gtk.Builder):
+    def __init__(self, main):
+        super(PublishAtomForm, self).__init__()
+        self.add_from_file('publish_atom2.ui')
+        self.main = main
+        self.treeview = self.get_object('treeviewTags')
+        self.mdialog = self.get_object('mainDialog')
+        self.mdialog.set_transient_for(self.main.mwin)
+
+        # some UI stuff
+        self.setup_treeviews()
+        self.get_object('nodeIdEntry').set_icon_tooltip_text(
+            gtk.ENTRY_ICON_SECONDARY,
+            'Generate a random uuid for this entry')
+
+        # setting default values
+        now = datetime.now().strftime('%Y/%m/%d %X')
+        self.get_object('publishedDateEntry').set_text(now)
+        self.get_object('updatedDateEntry').set_text(now)
+
+
+        # setting up signals
+        self.mdialog.connect('cancel', self.destroy)
+        self.get_object('nodeIdEntry').connect(
+            'icon-press', self.gen_id)
+        self.get_object('nodeTitleEntry').connect(
+            'changed', self.update_ok_state)
+        self.get_object('nodeIdEntry').connect(
+            'changed', self.update_ok_state)
+        self.get_object('publishedDateEntry').connect(
+            'changed', self.update_ok_state)
+        self.get_object('updatedDateEntry').connect(
+            'changed', self.update_ok_state)
+        self.get_object('btAdd').connect('clicked', self.add_row)
+
+    def run(self):
+        return self.mdialog.show_all()
+
+    def destroy(self, *nil):
+        return self.mdialog.destroy()
+
+    def setup_treeviews(self):
+        """Sets up renderers and columns for tags treeview.
+        """
+        self.label_cell = renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Label', renderer, text=0, editable=2)
+        self.treeview.append_column(column)
+
+        renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Uri', renderer, text=1, editable=2)
+        self.treeview.append_column(column)
+
+    def add_row(self, button):
+        model = self.treeview.get_model()
+        giter = model.append(['a', 'b', True])
+        path = model.get_path(giter)
+
+        # We're sure that both indexes exists, they were added by the
+        # `self.setup_treeviews()' method.
+        column = self.treeview.get_columns()[0]
+        cell = column.get_cell_renderers()[0]
+        column.focus_cell(cell)
+
+    def gen_id(self, entry, *nil):
+        urn = 'urn:uuid:%s' % uuid.uuid4()
+        entry.set_text(urn)
+
+    def update_ok_state(self, *nil):
+        page = self.get_object('page1')
+        enabled = True
+        for i in [
+            'nodeTitleEntry', 'nodeIdEntry',
+            'publishedDateEntry', 'updatedDateEntry']:
+            obj = self.get_object(i)
+            if not obj.get_text().strip():
+                enabled = False
+
+        # TODO: validate date fields
+        self.mdialog.set_page_complete(page, enabled)
 
 class NewNodeForm(gtk.Builder):
     """Loads the newnode.ui file, grab necessary info to create a new
