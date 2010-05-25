@@ -153,7 +153,7 @@ class MainWindow(gtk.Builder):
 
         # post tree setup
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Post', renderer, text=0)
+        column = gtk.TreeViewColumn('Posts', renderer, text=0)
         self.treeviewp.append_column(column)
 
     def quit(self, *nil):
