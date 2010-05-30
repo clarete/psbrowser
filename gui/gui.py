@@ -117,6 +117,7 @@ class MainWindow(gtk.Builder):
 
         # Path to be expanded after loading node tree
         self.path_to_expand = ()
+        self.selected_node = None
 
         # Setting up xmpp stuff
         self.jid_from = ctx.get('jid')
@@ -140,6 +141,7 @@ class MainWindow(gtk.Builder):
         self.get_object('tbRemove').connect('clicked', self.remove_cb)
         self.get_object('tbAdd').connect('clicked', self.newnode_cb)
         self.get_object('tbPublish').connect('clicked', self.publish_cb)
+        self.treeview.connect('row-activated', self.select_node)
 
     def setup_treeviews(self):
         """Sets up renderers and columns for both node and post
@@ -147,7 +149,7 @@ class MainWindow(gtk.Builder):
         """
         # node tree setup
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Node', renderer, text=0)
+        column = gtk.TreeViewColumn('Node', renderer, markup=0)
         self.treeview.append_column(column)
         self.treeview.connect('row-activated', self.list_posts)
 
@@ -212,6 +214,22 @@ class MainWindow(gtk.Builder):
         pub = PublishAtomForm(self)
         pub.run()
         #pub.destroy()
+
+    def select_node(self, treeview, path, column, user_data=None):
+        model = treeview.get_model()
+        node = model[path][0]
+
+        # Getting rid of markup of all nodes
+        def remove_markup(model, path, giter):
+            right_name = model[path][0]
+            right_name = right_name.replace('<b>', '')
+            right_name = right_name.replace('</b>', '')
+            model[path][0] = right_name
+        model.foreach(remove_markup)
+
+        # Formatting the selected node
+        model[path][0] = '<b>%s</b>' % node
+        self.selected_node = node
 
     # pubsub stuff
 
