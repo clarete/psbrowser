@@ -1,32 +1,23 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk+" version="2.16"/>
+  <requires lib="gtk+" version="2.20"/>
   <!-- interface-naming-policy project-wide -->
-  <object class="GtkListStore" id="liststoreTags">
-    <columns>
-      <!-- column-name label -->
-      <column type="gchararray"/>
-      <!-- column-name uri -->
-      <column type="gchararray"/>
-      <!-- column-name editable -->
-      <column type="gboolean"/>
-    </columns>
+  <object class="GtkSizeGroup" id="sizegroupEntries">
+    <widgets>
+      <widget name="label2"/>
+      <widget name="label5"/>
+      <widget name="label4"/>
+      <widget name="label1"/>
+    </widgets>
   </object>
   <object class="GtkAssistant" id="mainDialog">
     <property name="title" translatable="yes">Publish an atom entry</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
       <object class="GtkVBox" id="page1">
         <property name="visible">True</property>
         <property name="border_width">12</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child>
           <object class="GtkHBox" id="hbox1">
@@ -48,7 +39,7 @@
               <object class="GtkEntry" id="nodeTitleEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char">●</property>
                 <property name="activates_default">True</property>
               </object>
               <packing>
@@ -80,11 +71,10 @@
               <object class="GtkEntry" id="nodeIdEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char">●</property>
                 <property name="activates_default">True</property>
                 <property name="secondary_icon_stock">gtk-execute</property>
                 <property name="secondary_icon_activatable">True</property>
-                <property name="secondary_icon_sensitive">True</property>
               </object>
               <packing>
                 <property name="position">1</property>
@@ -115,7 +105,7 @@
               <object class="GtkEntry" id="publishedDateEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char">●</property>
                 <property name="activates_default">True</property>
               </object>
               <packing>
@@ -147,7 +137,7 @@
               <object class="GtkEntry" id="updatedDateEntry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="invisible_char">&#x25CF;</property>
+                <property name="invisible_char">●</property>
                 <property name="activates_default">True</property>
               </object>
               <packing>
@@ -193,7 +183,6 @@
         <child>
           <object class="GtkVButtonBox" id="vbuttonbox1">
             <property name="visible">True</property>
-            <property name="orientation">vertical</property>
             <property name="spacing">4</property>
             <property name="layout_style">start</property>
             <child>
@@ -236,12 +225,14 @@
       </packing>
     </child>
   </object>
-  <object class="GtkSizeGroup" id="sizegroupEntries">
-    <widgets>
-      <widget name="label1"/>
-      <widget name="label4"/>
-      <widget name="label5"/>
-      <widget name="label2"/>
-    </widgets>
+  <object class="GtkListStore" id="liststoreTags">
+    <columns>
+      <!-- column-name label -->
+      <column type="gchararray"/>
+      <!-- column-name uri -->
+      <column type="gchararray"/>
+      <!-- column-name editable -->
+      <column type="gboolean"/>
+    </columns>
   </object>
 </interface>
