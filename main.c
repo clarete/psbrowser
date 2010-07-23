@@ -177,6 +177,17 @@ cmd_mkdir (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
 }
 
 static void
+cmd_mkleaf (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
+            int nparams, void *data)
+{
+  iks *iq;
+  iq = ta_pubsub_node_create (ctx->from, ctx->to, params[0],
+                              "type", "leaf", NULL);
+  ta_xmpp_client_send_and_filter (ctx->xmpp, iq, parse_answer, ctx, NULL);
+  iks_delete (iq);
+}
+
+static void
 cmd_delete (ps_ctx_t *ctx, ps_command_t *cmd, char **params,
             int nparams, void *data)
 {
@@ -562,6 +573,7 @@ ps_ctx_register_commands (ps_ctx_t *ctx)
   _register_cmd (ctx, "pwd", "Shows wich node is selected", 0, cmd_pwd);
   _register_cmd (ctx, "rm", "Removes a node", 1, cmd_delete);
   _register_cmd (ctx, "mkdir", "Creates a collection node", 1, cmd_mkdir);
+  _register_cmd (ctx, "mkleaf", "Creates a leaf node", 1, cmd_mkleaf);
   _register_cmd (ctx, "subscribe", "Subscribes the connected JID to a node", 1,
                  cmd_subscribe);
   _register_cmd (ctx, "unsubscribe",
