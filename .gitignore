@@ -1,0 +1,16 @@
+*~
+*.[oa]
+*.l[oa]
+*.stamp
+.deps
+.libs
+Makefile
+Makefile.in
+aclocal.m4
+/autom4te.cache/
+/config.*
+/configure
+/stamp-h1
+/missing
+/install-sh
+/depcomp
