@@ -19,7 +19,7 @@
 [CCode (cheader_filename="taningia/taningia.h")]
 namespace Taningia {
 
-	[CCode (cname="ta_log_handler_func_t")]
+	[CCode (cname="ta_log_handler_func_t", has_target=false)]
 	public delegate int LogHandlerFunc (Log log, LogLevel level,
 										string msg, void *data);
 
