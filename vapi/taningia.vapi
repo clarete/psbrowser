@@ -54,10 +54,10 @@ namespace Taningia {
 		public bool get_use_colors ();
 
 		[CCode (cname="ta_log_set_level")]
-		public void set_log_level (LogLevel level);
+		public void set_level (LogLevel level);
 
 		[CCode (cname="ta_log_get_level")]
-		public LogLevel get_log_level ();
+		public LogLevel get_level ();
 
 		[CCode (cname="ta_log_set_handler")]
 		public void set_handler (LogHandlerFunc handler, void *data);
