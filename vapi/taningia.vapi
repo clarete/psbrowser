@@ -77,4 +77,66 @@ namespace Taningia {
 		[CCode (cname="ta_log_critical")]
 		public void critical (string fmt);
 	}
+
+	[CCode (cheader_filename="taningia/taningia.h")]
+	namespace Xmpp {
+		[CCode (cname="ta_xmpp_client_hook_t", has_target=false)]
+		public delegate int ClientHookFunc (Client client, void *data1,
+											void *data2);
+
+		[Compact]
+		[CCode (cname="ta_xmpp_client_t", free_function="ta_object_unref")]
+		public class Client {
+			[CCode (cname="ta_xmpp_client_new")]
+			public Client (string jid, string password,
+						   string host, int port);
+
+			[CCode (cname="ta_xmpp_client_get_jid")]
+			public unowned string get_jid ();
+
+			[CCode (cname="ta_xmpp_client_get_password")]
+			public unowned string get_password ();
+
+			[CCode (cname="ta_xmpp_client_get_host")]
+			public unowned string get_host ();
+
+			[CCode (cname="ta_xmpp_client_get_port")]
+			public int get_port ();
+
+			[CCode (cname="ta_xmpp_client_set_jid")]
+			public unowned void set_jid (string jid);
+
+			[CCode (cname="ta_xmpp_client_set_password")]
+			public unowned void set_password (string password);
+
+			[CCode (cname="ta_xmpp_client_set_host")]
+			public unowned void set_host (string host);
+
+			[CCode (cname="ta_xmpp_client_set_port")]
+			public void set_port (int port);
+
+			[CCode (cname="ta_xmpp_client_get_logger")]
+			public unowned Log get_logger ();
+
+			[CCode (cname="ta_xmpp_client_connect")]
+			public int connect ();
+
+			[CCode (cname="ta_xmpp_client_disconnect")]
+			public int disconnect ();
+
+			[CCode (cname="ta_xmpp_client_send")]
+			public int send (Iksemel.Iks node);
+
+			[CCode (cname="ta_xmpp_client_run")]
+			public int run (bool detach);
+
+			[CCode (cname="ta_xmpp_client_is_running")]
+			public bool is_running ();
+
+			[CCode (cname="ta_xmpp_client_event_connect")]
+			public int event_connect (string event, ClientHookFunc hook,
+									  void *data);
+
+		}
+	}
 }
