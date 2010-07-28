@@ -93,4 +93,23 @@ namespace Iksemel {
 			return _string (null, this);
 		}
 	}
+
+	[CCode (cname="ikshowtype")]
+	public enum ShowType {
+		[CCode (cname="IKS_SHOW_UNAVAILABLE")]
+		UNAVAILABLE,
+		[CCode (cname="IKS_SHOW_AVAILABLE")]
+		AVAILABLE,
+		[CCode (cname="IKS_SHOW_CHAT")]
+		CHAT,
+		[CCode (cname="IKS_SHOW_AWAY")]
+		AWAY,
+		[CCode (cname="IKS_SHOW_XA")]
+		XA,
+		[CCode (cname="IKS_SHOW_DND")]
+		DND
+	}
+
+	[CCode (cname="iks_make_pres")]
+	public Iks make_pres (ShowType type, string status);
 }
