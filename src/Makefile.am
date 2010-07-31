@@ -1,6 +1,7 @@
 bin_PROGRAMS = psbrowser
 
 psbrowser_SOURCES = \
+	bookmarks.vala \
 	loading.vala \
 	main.vala
 
