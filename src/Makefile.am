@@ -1,6 +1,7 @@
 bin_PROGRAMS = psbrowser
 
 psbrowser_SOURCES = \
+	loading.vala \
 	main.vala
 
 INCLUDES = \
@@ -11,6 +12,7 @@ INCLUDES = \
 	-DPKGLIBDIR=\""$(pkglibdir)"\"
 
 VALAFLAGS = \
+	--thread \
 	--vapidir=$(srcdir)/../vapi \
 	@PSBROWSER_PACKAGES@
 

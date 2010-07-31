@@ -17,15 +17,70 @@
  */
 
 using Gtk;
-//using PsBrowser;
+using Iksemel;
+using Taningia;
+using PsBrowser;
+
+class MainWindow : Builder {
+
+	private Window mwin;
+	private Loading loading;
+	private Taningia.Log logger;
+
+	public MainWindow () throws Error {
+		this.add_from_file ("data/psbrowser.ui");
+
+		// Logging setup
+		this.logger = new Taningia.Log ("psbrowser");
+		this.logger.set_level (Taningia.LogLevel.DEBUG);
+		this.logger.set_use_colors(true);
+
+		// Layout
+		this.layout_setup ();
+		this.signal_setup ();
+	}
+
+	// -- Layout stuff
+
+	private void layout_setup () {
+		this.mwin = (Window) this.get_object ("mainWindow");
+		this.loading = new Loading ();
+
+		// Fancy white header
+		var eventbox = (EventBox) this.get_object ("titleEventbox");
+		Gdk.Color white;
+		Gdk.Color.parse ("#fff", out white);
+		eventbox.get_colormap ().alloc_color (white, true, true);
+		eventbox.modify_bg (Gtk.StateType.NORMAL, white);
+
+		// Positioning loading widget
+		((Box) this.get_object ("hboxTop")).pack_end (
+			this.loading, false, false, 0);
+	}
+
+	private void signal_setup () {
+		this.mwin.destroy.connect (Gtk.main_quit);
+	}
+
+	// -- public methods --
+
+	public void run () {
+		this.mwin.show_all ();
+		this.loading.unref_loading ();
+	}
+}
 
 int
 main (string[] args)
 {
 	Gtk.init(ref args);
 
-	//UI.MainWindow win = new UI.MainWindow();
-	//win.show_all();
+	try {
+		var mwin = new MainWindow ();
+		mwin.run();
+	} catch (Error e) {
+		stderr.printf ("Error: %s\n", e.message);
+	}
 
 	Gtk.main();
 	return 0;
