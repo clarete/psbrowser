@@ -14,3 +14,5 @@ aclocal.m4
 /missing
 /install-sh
 /depcomp
+/src/psbrowser
+/src/*.c
