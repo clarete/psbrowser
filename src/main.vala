@@ -24,7 +24,7 @@ using PsBrowser;
 class MainWindow : Builder {
 
 	private Window mwin;
-	private Loading loading;
+	private UI.Loading loading;
 	private Taningia.Log logger;
 
 	public MainWindow () throws Error {
@@ -44,7 +44,7 @@ class MainWindow : Builder {
 
 	private void layout_setup () {
 		this.mwin = (Window) this.get_object ("mainWindow");
-		this.loading = new Loading ();
+		this.loading = new UI.Loading ();
 
 		// Fancy white header
 		var eventbox = (EventBox) this.get_object ("titleEventbox");

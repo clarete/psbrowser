@@ -18,7 +18,7 @@
 
 using Gtk;
 
-namespace PsBrowser {
+namespace PsBrowser.UI {
 
     /**
 	 * An abstraction for a loading widget that is shown when some async
