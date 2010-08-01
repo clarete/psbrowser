@@ -23,7 +23,7 @@ namespace PsBrowser {
 	/**
 	 * Represents a bookmark object
 	 */
-	class Bookmark : Object {
+	public class Bookmark : Object {
 		public string jid { get; set; }
 		public string password { get; set; }
 		public string host { get; set; }
@@ -47,7 +47,7 @@ namespace PsBrowser {
     /**
 	 * Holds a list of bookmarks
 	 */
-	class BookmarkList : ArrayList<Bookmark> {
+	public class BookmarkList : ArrayList<Bookmark> {
 		/**
 		 * Loads a bunch of bookmarks from a file.
 		 *
