@@ -29,12 +29,14 @@ namespace PsBrowser.UI {
 				this.dialog.set_transient_for (parent);
 		}
 
-		public void run () {
+		public Bookmark? run () {
+			Bookmark bookmark = null;
 			if (dialog.run () == 1)
 				stdout.printf ("Ok\n");
 			else
 				stdout.printf ("Cancel\n");
 			dialog.destroy ();
+			return bookmark;
 		}
 	}
 }

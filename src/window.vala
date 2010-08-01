@@ -78,10 +78,14 @@ namespace PsBrowser.UI {
 
 		// -- Callbacks --
 
-		[CCode (instance_pos=-1)]
-		void bt_bookmark_add_cb (Button bt, void *data) {
-			Window win = (Window) data;
-			new UI.NewBookmarkForm (win).run ();
+		static void bt_bookmark_add_cb (Button bt, void *data) {
+			var self = (MainWindow) data;
+			var nbform = new UI.NewBookmarkForm (self.mwin);
+			var bookmark = nbform.run ();
+
+			if (bookmark != null) {
+				
+			}
 		}
 
 		private void setup_signals () {
@@ -90,7 +94,7 @@ namespace PsBrowser.UI {
 
 			// Bookmark manager buttons
 			Signal.connect (this.get_object ("btBookmarkAdd"), "clicked",
-							(GLib.Callback) bt_bookmark_add_cb, this.mwin);
+							(GLib.Callback) bt_bookmark_add_cb, this);
 		}
 
 		// -- Public methods --
