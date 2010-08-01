@@ -56,6 +56,20 @@ class MainWindow : Builder {
 		// Positioning loading widget
 		((Box) this.get_object ("hboxTop")).pack_end (
 			this.loading, false, false, 0);
+
+		// ServerList TreeView column setup
+		var serverList = (TreeView) this.get_object ("serverList");
+		var renderer = new CellRendererText ();
+		var column = new TreeViewColumn.with_attributes (
+			"Service", renderer, "markup", 0);
+		serverList.append_column (column);
+		var column1 = new TreeViewColumn.with_attributes (
+			"JID", renderer, "markup", 1);
+		serverList.append_column (column1);
+
+		// Treeview models
+		var bmstore = new UI.BookmarkStore.from_file ("bleh.xml");
+		serverList.set_model (bmstore);
 	}
 
 	private void signal_setup () {
