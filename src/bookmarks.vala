@@ -76,5 +76,21 @@ namespace PsBrowser {
 				}
 			}
 		}
+
+		/** Write an xml with all bookmarks held by this list */
+		public Doc* to_xml () {
+			/* Building and setting up document */
+			Xml.Doc* doc = new Xml.Doc ("1.0");
+			Xml.Node* root = new Xml.Node (null, "bookmarks");
+			doc->set_root_element (root);
+			foreach (var bm in this)
+				root->add_child (bm.to_xml ());
+			return doc;
+		}
+
+		/** Save current list of bookmarks to a file */
+		public void save (string fpath) {
+			this.to_xml ()->save_file (fpath);
+		}
 	}
 }
