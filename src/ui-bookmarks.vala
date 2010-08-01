@@ -24,10 +24,21 @@ namespace PsBrowser.UI {
 		private ArrayList<Type> column_headers;
 		private int stamp;
 
+		enum Columns {
+			SERVICE,
+			JID,
+			N_COLUMNS
+		}
+
 		construct {
 			this.stamp = (int) Random.next_int ();
 			this.column_headers = new ArrayList<Type> ();
-			this.column_headers.add(typeof (GLib.Object));
+
+			// SERVICE
+			this.column_headers.add(typeof (string));
+
+			// JID
+			this.column_headers.add(typeof (string));
 		}
 
 		public BookmarkStore () {
@@ -50,7 +61,7 @@ namespace PsBrowser.UI {
 		}
 
 		public int get_n_columns () {
-			return this.column_headers.size;
+			return Columns.N_COLUMNS;
 		}
 
 		public TreePath get_path (TreeIter iter) {
@@ -69,9 +80,11 @@ namespace PsBrowser.UI {
 		public void get_value (TreeIter iter, int column, out Value value) {
 			value.init (this.column_headers[column]);
 			int index = this.index_of ((Bookmark) iter.user_data);
-			if (this.column_headers[column] == typeof (string)) {
-				value.set_object (((ArrayList<Bookmark>) this).get(index));
-			}
+			var bookmark = ((ArrayList<Bookmark>) this).get (index);
+			if (column == Columns.SERVICE)
+				value.set_string (bookmark.service);
+			else if (column == Columns.JID)
+				value.set_string (bookmark.jid);
 		}
 
 		public bool iter_children (out TreeIter iter, TreeIter? parent) {
