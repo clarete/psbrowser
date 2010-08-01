@@ -182,7 +182,7 @@
                         <property name="visible">True</property>
                         <property name="spacing">4</property>
                         <child>
-                          <object class="GtkButton" id="button4">
+                          <object class="GtkButton" id="btBookmarkAdd">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -199,7 +199,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="button2">
+                          <object class="GtkButton" id="btBookmarkEdit">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -216,7 +216,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="button3">
+                          <object class="GtkButton" id="btBookmarkRemove">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
