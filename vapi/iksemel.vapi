@@ -21,6 +21,26 @@
 namespace Iksemel {
 
 	[Compact]
+	[CCode (cname="ikstack", free_function="iks_stack_delete")]
+	public class Stack {
+		[CCode (cname="iks_stack_new")]
+		public Stack (size_t meta_chunk, size_t data_chunk);
+	}
+
+	[Compact]
+	[CCode (cname="iksid", free_function="")]
+	public class Id {
+		public string user;
+		public string server;
+		public string resource;
+		public string partial;
+		public string full;
+
+		[CCode (cname="iks_id_new")]
+		public Id (Stack stack, string jid);
+	}
+
+	[Compact]
 	[CCode (cname="iks", free_function="iks_delete")]
 	public class Iks {
 		[CCode (cname="iks_new")]
