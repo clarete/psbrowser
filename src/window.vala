@@ -22,7 +22,8 @@ namespace PsBrowser.UI {
 	public class MainWindow : Builder {
 
 		private Window mwin;
-		private UI.Loading loading;
+		private Loading loading;
+		private BookmarkStore bmstore;
 
 		public MainWindow () {
 			this.add_from_file ("data/psbrowser.ui");
@@ -62,7 +63,7 @@ namespace PsBrowser.UI {
 			var serverList = (TreeView) this.get_object ("serverList");
 
 			// Model setup
-			var bmstore = new UI.BookmarkStore ();
+			bmstore = new UI.BookmarkStore ();
 			serverList.set_model (bmstore);
 
 			// Renderers and columns
