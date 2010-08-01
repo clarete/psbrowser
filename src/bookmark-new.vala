@@ -28,6 +28,12 @@ namespace PsBrowser.UI {
 			if (parent != null)
 				this.dialog.set_transient_for (parent);
 
+			// Glade is not setting the default value of the port
+			// input, so let's do it ourselves.
+			((SpinButton) this.get_object ("portEntry"))
+			    .get_adjustment ()
+			    .set_value (5222.0);
+
 			Signal.connect (this.get_object ("jidEntry"), "changed",
 							(GLib.Callback) fill_jid_dependent_fields, this);
 
