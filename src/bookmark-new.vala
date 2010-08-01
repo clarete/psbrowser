@@ -90,10 +90,20 @@ namespace PsBrowser.UI {
 
 		public Bookmark? run () {
 			Bookmark bookmark = null;
-			if (dialog.run () == 1)
-				stdout.printf ("Ok\n");
-			else
-				stdout.printf ("Cancel\n");
+			if (dialog.run () == 1) {
+				bookmark = new Bookmark ();
+				bookmark.jid =
+					((Entry) this.get_object ("jidEntry")).get_text ();
+				bookmark.password =
+					((Entry) this.get_object ("passwordEntry")).get_text ();
+				bookmark.host =
+					((Entry) this.get_object ("hostEntry")).get_text ();
+				bookmark.service =
+					((Entry) this.get_object ("pserviceEntry")).get_text ();
+				bookmark.port =
+					((SpinButton) this.get_object ("portEntry"))
+				        .get_value_as_int ();
+			}
 			dialog.destroy ();
 			return bookmark;
 		}
