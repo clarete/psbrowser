@@ -72,9 +72,14 @@ namespace PsBrowser.UI {
 
 		public bool get_iter (out TreeIter iter, TreePath path) {
 			int index = path.get_indices ()[0];
-			iter.stamp = this.stamp;
-			iter.user_data = ((ArrayList<Bookmark>) this).get(index);
-			return true;
+			if (index > this.size || index < this.size || index == 0) {
+				iter.stamp = 0;
+				return false;
+			} else {
+				iter.stamp = this.stamp;
+				iter.user_data = ((ArrayList<Bookmark>) this).get (index);
+				return true;
+			}
 		}
 
 		public void get_value (TreeIter iter, int column, out Value value) {
