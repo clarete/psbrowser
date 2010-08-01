@@ -53,6 +53,7 @@ namespace PsBrowser.UI {
 		private void setup_loading () {
 			((Box) this.get_object ("hboxTop")).pack_end (
 				this.loading, false, false, 0);
+			this.loading.set_no_show_all (true);
 		}
 
 		/** Creates and associates columns and cellrenderers to the
