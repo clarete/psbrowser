@@ -1,4 +1,4 @@
-/* ui-bookmarks.vala - This file is part of the psbrowser program
+/* bookmark-store.vala - This file is part of the psbrowser program
  *
  * Copyright (C) 2010  Lincoln de Sousa <lincoln@comum.org>
  *
@@ -156,24 +156,5 @@ namespace PsBrowser.UI {
 		// Ignoring these methods as documentation allows to
 		public void ref_node (TreeIter iter) {}
 		public void unref_node (TreeIter iter) {}
-	}
-
-	public class NewBookmarkForm : Builder {
-		Dialog dialog;
-
-		public NewBookmarkForm (Window? parent) {
-			this.add_from_file ("data/newbookmark.ui");
-			this.dialog = (Dialog) this.get_object ("mainDialog");
-			if (parent != null)
-				this.dialog.set_transient_for (parent);
-		}
-
-		public void run () {
-			if (dialog.run () == 1)
-				stdout.printf ("Ok\n");
-			else
-				stdout.printf ("Cancel\n");
-			dialog.destroy ();
-		}
 	}
 }
