@@ -27,6 +27,30 @@ namespace PsBrowser.UI {
 			this.dialog = (Dialog) this.get_object ("mainDialog");
 			if (parent != null)
 				this.dialog.set_transient_for (parent);
+
+			Signal.connect (this.get_object ("jidEntry"), "changed",
+							(GLib.Callback) fill_jid_dependent_fields, this);
+
+		}
+
+		static void fill_jid_dependent_fields (Entry entry, void *data) {
+			var self = (NewBookmarkForm) data;
+			var jid = entry.get_text ();
+			var id = new Iksemel.Id (new Iksemel.Stack (64, 128), jid);
+
+			if ((id.user != null && id.user.length != 0) &&
+				(id.server != null && id.server.length != 0)) {
+				// JID seems to be ok, let's fill host and pubsub
+				// fields.
+				var server = id.server;
+				((Entry) self.get_object ("hostEntry")).set_text (server);
+				((Entry) self.get_object ("pserviceEntry")).set_text (
+					@"pubsub.$server");
+			} else {
+				// No usable JID, let's reset host and pubsub fields.
+				((Entry) self.get_object ("hostEntry")).set_text ("");
+				((Entry) self.get_object ("pserviceEntry")).set_text ("");
+			}
 		}
 
 		public Bookmark? run () {
