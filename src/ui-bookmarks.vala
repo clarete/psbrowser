@@ -157,4 +157,23 @@ namespace PsBrowser.UI {
 		public void ref_node (TreeIter iter) {}
 		public void unref_node (TreeIter iter) {}
 	}
+
+	public class NewBookmarkForm : Builder {
+		Dialog dialog;
+
+		public NewBookmarkForm (Window? parent) {
+			this.add_from_file ("data/newbookmark.ui");
+			this.dialog = (Dialog) this.get_object ("mainDialog");
+			if (parent != null)
+				this.dialog.set_transient_for (parent);
+		}
+
+		public void run () {
+			if (dialog.run () == 1)
+				stdout.printf ("Ok\n");
+			else
+				stdout.printf ("Cancel\n");
+			dialog.destroy ();
+		}
+	}
 }

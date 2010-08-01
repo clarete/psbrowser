@@ -72,8 +72,21 @@ class MainWindow : Builder {
 		serverList.set_model (bmstore);
 	}
 
+	// -- Callbacks --
+
+	[CCode (instance_pos=-1)]
+	void bt_bookmark_add_cb (Button bt, void *data) {
+		Window win = (Window) data;
+		new UI.NewBookmarkForm (win).run ();
+	}
+
 	private void signal_setup () {
-		this.mwin.destroy.connect (Gtk.main_quit);
+		// Main window
+		Signal.connect (this.mwin, "destroy", Gtk.main_quit, null);
+
+		// Bookmark manager buttons
+		Signal.connect (this.get_object ("btBookmarkAdd"), "clicked",
+						(GLib.Callback) bt_bookmark_add_cb, this.mwin);
 	}
 
 	// -- public methods --
