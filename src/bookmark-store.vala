@@ -168,6 +168,26 @@ namespace PsBrowser.UI {
 			return false;
 		}
 
+		// These methods are not from any interface but are necessary
+		public void insert_data (int position, Bookmark data) {
+			var iter = TreeIter ();
+			var path = new TreePath ();
+
+			if (position > this.size)
+				position = this.size;
+
+			iter.stamp = this.stamp;
+			iter.user_data = data;
+			this.insert (position, data);
+
+			path.append_index (position);
+			this.row_inserted (path, iter);
+		}
+
+		public void append_data (Bookmark data) {
+			this.insert_data (this.size, data);
+		}
+
 		// Ignoring these methods as documentation allows to
 		public void ref_node (TreeIter iter) {}
 		public void unref_node (TreeIter iter) {}
