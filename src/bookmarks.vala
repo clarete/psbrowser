@@ -44,10 +44,22 @@ namespace PsBrowser {
 		}
 	}
 
+	private bool bookmark_compare (Bookmark a, Bookmark b) {
+		return a.jid == b.jid &&
+			a.password == b.password &&
+			a.host == b.host &&
+			a.port == b.port &&
+			a.service == b.service;
+	}
+
     /**
 	 * Holds a list of bookmarks
 	 */
 	public class BookmarkList : ArrayList<Bookmark> {
+		public BookmarkList () {
+			base ((EqualFunc) bookmark_compare);
+		}
+
 		/**
 		 * Loads a bunch of bookmarks from a file.
 		 *
@@ -75,6 +87,7 @@ namespace PsBrowser {
 					this.add (bookmark);
 				}
 			}
+			this ();
 		}
 
 		/** Write an xml with all bookmarks held by this list */
