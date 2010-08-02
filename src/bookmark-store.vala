@@ -42,6 +42,7 @@ namespace PsBrowser.UI {
 		}
 
 		public BookmarkStore () {
+			base ();
 		}
 
 		public BookmarkStore.from_file (string fpath) throws FileError {
