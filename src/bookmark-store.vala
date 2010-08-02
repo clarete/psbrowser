@@ -188,6 +188,14 @@ namespace PsBrowser.UI {
 			this.insert_data (this.size, data);
 		}
 
+		public void remove_index (int index) {
+			var path = new TreePath ();
+			path.append_index (index);
+
+			this.remove_at (index);
+			this.row_deleted (path);
+		}
+
 		// Ignoring these methods as documentation allows to
 		public void ref_node (TreeIter iter) {}
 		public void unref_node (TreeIter iter) {}
