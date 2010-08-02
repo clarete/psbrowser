@@ -84,7 +84,7 @@ namespace PsBrowser.UI {
 			var bookmark = nbform.run ();
 
 			if (bookmark != null) {
-				
+				self.bmstore.append_data (bookmark);
 			}
 		}
 
