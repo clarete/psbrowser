@@ -66,31 +66,36 @@ namespace PsBrowser.UI {
 		}
 
 		public TreePath get_path (TreeIter iter) {
-			var path = new TreePath();
+			var path = new TreePath ();
 			path.append_index (this.index_of ((Bookmark) iter.user_data));
 			return path;
 		}
 
 		public bool get_iter (out TreeIter iter, TreePath path) {
 			int index = path.get_indices ()[0];
-			if (index > this.size || index < this.size || index == 0) {
+			if (index >= this.size) {
 				iter.stamp = 0;
 				return false;
 			} else {
+				Bookmark bookmark = ((BookmarkList) this).get (index);
 				iter.stamp = this.stamp;
-				iter.user_data = ((ArrayList<Bookmark>) this).get (index);
+				iter.user_data = bookmark.ref ();
 				return true;
 			}
 		}
 
 		public void get_value (TreeIter iter, int column, out Value value) {
+			Bookmark bookmark = (Bookmark) iter.user_data;
+			/* Time to setup the correct value depending on the column */
 			value.init (this.column_headers[column]);
-			int index = this.index_of ((Bookmark) iter.user_data);
-			var bookmark = ((ArrayList<Bookmark>) this).get (index);
-			if (column == Columns.SERVICE)
+			switch (column) {
+			case Columns.SERVICE:
 				value.set_string (bookmark.service);
-			else if (column == Columns.JID)
+				break;
+			case Columns.JID:
 				value.set_string (bookmark.jid);
+				break;
+			}
 		}
 
 		public bool iter_children (out TreeIter iter, TreeIter? parent) {
@@ -103,8 +108,9 @@ namespace PsBrowser.UI {
 
 			if (this.size > 0) {
 				// Let's point to the first element of this list
+				Bookmark bookmark = ((BookmarkList) this).get (0);
 				iter.stamp = this.stamp;
-				iter.user_data = ((ArrayList<Bookmark>) this).get(0);
+				iter.user_data = bookmark;
 				return true;
 			} else {
 				// List is empty
@@ -132,25 +138,28 @@ namespace PsBrowser.UI {
 				iter.stamp = 0;
 				return false;
 			} else {
+				Bookmark bookmark = ((BookmarkList) this).get (n);
 				iter.stamp = this.stamp;
-				iter.user_data = ((ArrayList<Bookmark>) this).get (n);
+				iter.user_data = bookmark;
 				return true;
 			}
 		}
 
 		public bool iter_next (ref TreeIter iter) {
 			int index;
-			if (iter.stamp != this.stamp) {
+			if (iter.stamp != this.stamp)
 				return false;
-			}
-
-			index = this.index_of ((Bookmark) iter.user_data);
-			if (index+1 > this.size || index+1 < this.size) {
+			if (this.size < 2) {
 				iter.stamp = 0;
 				return false;
 			}
-
-			iter.user_data = ((ArrayList<Bookmark>) this).get(index+1);
+			index = ((BookmarkList) this).index_of ((Bookmark) iter.user_data);
+			if (index == -1 || index+2 > this.size) {
+				iter.stamp = 0;
+				return false;
+			}
+			Bookmark bookmark = ((BookmarkList) this).get (index+1);
+			iter.user_data = bookmark;
 			return true;
 		}
 
