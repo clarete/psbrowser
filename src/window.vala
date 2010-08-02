@@ -82,9 +82,18 @@ namespace PsBrowser.UI {
 			var self = (MainWindow) data;
 			var nbform = new UI.NewBookmarkForm (self.mwin);
 			var bookmark = nbform.run ();
-
 			if (bookmark != null) {
 				self.bmstore.append_data (bookmark);
+			}
+		}
+
+		static void bt_bookmark_remove_cb (Button bt, void *data) {
+			var self = (MainWindow) data;
+			var server_list = (TreeView) self.get_object ("serverList");
+			var selection = server_list.get_selection ();
+			var rows = selection.get_selected_rows (null);
+			foreach (var row in rows) {
+				self.bmstore.remove_index (row.get_indices ()[0]);
 			}
 		}
 
@@ -95,6 +104,8 @@ namespace PsBrowser.UI {
 			// Bookmark manager buttons
 			Signal.connect (this.get_object ("btBookmarkAdd"), "clicked",
 							(GLib.Callback) bt_bookmark_add_cb, this);
+			Signal.connect (this.get_object ("btBookmarkRemove"), "clicked",
+							(GLib.Callback) bt_bookmark_remove_cb, this);
 		}
 
 		// -- Public methods --
