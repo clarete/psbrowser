@@ -27,7 +27,7 @@ public class PsBrowser.Connection : Object {
 	public signal void authfailed ();
 
 	public Bookmark bookmark { private set; get; }
-	private Xmpp.Client xmpp;
+	public Xmpp.Client xmpp { private set; get; }
 
 	/** Fires the "authenticated" signal and sends presence */
 	static int auth_cb (Xmpp.Client client, void *data1, void *data2) {
