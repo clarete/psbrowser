@@ -64,6 +64,11 @@ public class PsBrowser.Connection : Object {
 		unowned Taningia.Log ilogger = this.xmpp.get_logger ();
 		ilogger.set_level (Taningia.LogLevel.DEBUG);
 		ilogger.set_use_colors (true);
+	}
 
+	/** Calls the connect() and run() methods of the XMPP client. */
+	public void run () {
+		this.xmpp.connect ();
+		this.xmpp.run (true);
 	}
 }
