@@ -97,6 +97,18 @@ namespace PsBrowser.UI {
 			}
 		}
 
+		static void connect_cb (TreeView treeview, TreePath path,
+								TreeViewColumn column, void *data) {
+			var self = (MainWindow) data;
+			var iter = TreeIter ();
+
+			self.bmstore.get_iter (out iter, path);
+			var conn = new Connection ((Bookmark) iter.user_data);
+			conn.ref ();
+			stdout.printf ("JID: %s\n", conn.xmpp.get_jid ());
+			conn.run ();
+		}
+
 		private void setup_signals () {
 			// Main window
 			Signal.connect (this.mwin, "destroy", Gtk.main_quit, null);
@@ -106,6 +118,10 @@ namespace PsBrowser.UI {
 							(GLib.Callback) bt_bookmark_add_cb, this);
 			Signal.connect (this.get_object ("btBookmarkRemove"), "clicked",
 							(GLib.Callback) bt_bookmark_remove_cb, this);
+
+			// Connection management
+			Signal.connect (this.get_object ("serverList"), "row-activated",
+							(GLib.Callback) connect_cb, this);
 		}
 
 		// -- Public methods --
