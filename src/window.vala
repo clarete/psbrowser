@@ -116,15 +116,20 @@ namespace PsBrowser.UI {
 
 		static void bt_bookmark_remove_cb (Button bt, void *data) {
 			var self = (MainWindow) data;
+			var server_list = (TreeView) self.get_object ("serverList");
+			var selection = server_list.get_selection ();
+			var rows = selection.get_selected_rows (null);
+
+			/* We don't need to do anything if nothing is selected */
+			if (rows.length () == 0)
+				return;
+
 			var dialog = new MessageDialog.with_markup (
 				self.mwin, DialogFlags.MODAL, MessageType.QUESTION,
 				ButtonsType.YES_NO, "<b>Removing selected bookmark</b>");
 			dialog.format_secondary_text (
 				"Are you sure you want to remove selected bookmark?");
 			if (dialog.run () == ResponseType.YES) {
-				var server_list = (TreeView) self.get_object ("serverList");
-				var selection = server_list.get_selection ();
-				var rows = selection.get_selected_rows (null);
 				foreach (var row in rows) {
 					self.bmstore.remove_index (row.get_indices ()[0]);
 				}
