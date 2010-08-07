@@ -1,5 +1,7 @@
 bin_PROGRAMS = psbrowser
 
+AM_LDFLAGS = -Wl,--export-dynamic
+
 psbrowser_SOURCES = \
 	loading.vala \
 	bookmarks.vala \

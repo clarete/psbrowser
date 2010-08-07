@@ -40,7 +40,7 @@ namespace PsBrowser.UI {
 			this.setup_title ();
 			this.setup_loading ();
 			this.setup_bookmark_list ();
-			this.setup_signals ();
+			this.connect_signals (this);
 		}
 
 		// -- Layout stuff --
@@ -82,11 +82,11 @@ namespace PsBrowser.UI {
 			serverList.append_column (column1);
 		}
 
-		// -- Callbacks --
+		/* -- Callbacks -- */
 
-		static void bt_bookmark_add_cb (Button bt, void *data) {
-			var self = (MainWindow) data;
-			var nbform = new UI.NewBookmarkForm (self.mwin);
+		[CCode (instance_pos=-1)]
+		public void bt_bookmark_add_cb (Button bt) {
+			var nbform = new UI.NewBookmarkForm (this.mwin);
 			var bookmark = nbform.run ();
 			if (bookmark == null) {
 				/* User have canceled the add operation. Time to
@@ -95,10 +95,10 @@ namespace PsBrowser.UI {
 				return;
 			}
 
-			while (self.bmstore.contains (bookmark)) {
+			while (this.bmstore.contains (bookmark)) {
 				/* We have an identical bookmark already added, let's
 				 * feed the user back. */
-				var dialog = new MessageDialog.with_markup (self.mwin,
+				var dialog = new MessageDialog.with_markup (this.mwin,
 					DialogFlags.MODAL, MessageType.INFO,
 					ButtonsType.OK, "<b>Bookmark already exists</b>");
 				dialog.format_secondary_text (
@@ -116,13 +116,13 @@ namespace PsBrowser.UI {
 
 			/* It's everything ok, let's add the bookmark to our
 			 * list model and destroy the form. */
-			self.bmstore.append_data (bookmark);
+			this.bmstore.append_data (bookmark);
 			nbform.destroy ();
 		}
 
-		static void bt_bookmark_remove_cb (Button bt, void *data) {
-			var self = (MainWindow) data;
-			var server_list = (TreeView) self.get_object ("serverList");
+		[CCode (instance_pos=-1)]
+		public void bt_bookmark_remove_cb (Button bt) {
+			var server_list = (TreeView) this.get_object ("serverList");
 			var selection = server_list.get_selection ();
 			var rows = selection.get_selected_rows (null);
 
@@ -131,46 +131,31 @@ namespace PsBrowser.UI {
 				return;
 
 			var dialog = new MessageDialog.with_markup (
-				self.mwin, DialogFlags.MODAL, MessageType.QUESTION,
+				this.mwin, DialogFlags.MODAL, MessageType.QUESTION,
 				ButtonsType.YES_NO, "<b>Removing selected bookmark</b>");
 			dialog.format_secondary_text (
 				"Are you sure you want to remove selected bookmark?");
 			if (dialog.run () == ResponseType.YES) {
 				foreach (var row in rows) {
-					self.bmstore.remove_index (row.get_indices ()[0]);
+					this.bmstore.remove_index (row.get_indices ()[0]);
 				}
 			}
 			dialog.destroy ();
 		}
 
-		static void connect_cb (TreeView treeview, TreePath path,
-								TreeViewColumn column, void *data) {
-			var self = (MainWindow) data;
+		[CCode (instance_pos=-1)]
+		public void connect_cb (TreeView treeview, TreePath path,
+								TreeViewColumn column) {
 			var iter = TreeIter ();
 
-			self.bmstore.get_iter (out iter, path);
+			this.bmstore.get_iter (out iter, path);
 			var bookmark = (Bookmark) iter.user_data;
 
-			if (!self.connections.has_key (bookmark.get_name ())) {
+			if (!this.connections.has_key (bookmark.get_name ())) {
 				var conn = new Connection (bookmark);
-				self.connections.set (bookmark.get_name (), conn);
+				this.connections.set (bookmark.get_name (), conn);
 				conn.run ();
 			}
-		}
-
-		private void setup_signals () {
-			// Main window
-			Signal.connect (this.mwin, "destroy", Gtk.main_quit, null);
-
-			// Bookmark manager buttons
-			Signal.connect (this.get_object ("btBookmarkAdd"), "clicked",
-							(GLib.Callback) bt_bookmark_add_cb, this);
-			Signal.connect (this.get_object ("btBookmarkRemove"), "clicked",
-							(GLib.Callback) bt_bookmark_remove_cb, this);
-
-			// Connection management
-			Signal.connect (this.get_object ("serverList"), "row-activated",
-							(GLib.Callback) connect_cb, this);
 		}
 
 		// -- Public methods --

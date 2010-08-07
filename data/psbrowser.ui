@@ -19,6 +19,7 @@
     <property name="window_position">center</property>
     <property name="default_width">640</property>
     <property name="default_height">480</property>
+    <signal name="delete_event" handler="gtk_main_quit"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
@@ -141,6 +142,7 @@
                           <object class="GtkTreeView" id="serverList">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <signal name="row_activated" handler="ps_browser_ui_main_window_connect_cb"/>
                           </object>
                         </child>
                       </object>
@@ -158,6 +160,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <signal name="clicked" handler="ps_browser_ui_main_window_bt_bookmark_add_cb"/>
                             <child>
                               <object class="GtkImage" id="image3">
                                 <property name="visible">True</property>
@@ -192,6 +195,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <signal name="clicked" handler="ps_browser_ui_main_window_bt_bookmark_remove_cb"/>
                             <child>
                               <object class="GtkImage" id="image5">
                                 <property name="visible">True</property>
