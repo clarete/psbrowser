@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Gee;
 using Taningia;
 using Iksemel;
 
@@ -71,5 +72,24 @@ public class PsBrowser.Connection : Object {
 	public void run () {
 		this.xmpp.connect ();
 		this.xmpp.run (true);
+	}
+}
+
+namespace PsBrowser {
+	/** Uses the bookmark attribute of a connection to define if
+	 * connection a is equals to connection b */
+	private bool connection_compare (Connection a, Connection b) {
+		return a.bookmark.jid == b.bookmark.jid &&
+			a.bookmark.password == b.bookmark.password &&
+			a.bookmark.host == b.bookmark.host &&
+			a.bookmark.port == b.bookmark.port &&
+			a.bookmark.service == b.bookmark.service;
+	}
+
+	/** An extension of the HashMap class that manages connections */
+	public class ConnectionManager : HashMap<string,Connection> {
+		public ConnectionManager () {
+			base (str_hash, str_equal, (EqualFunc) connection_compare);
+		}
 	}
 }

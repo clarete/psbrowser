@@ -24,9 +24,13 @@ namespace PsBrowser.UI {
 		private Window mwin;
 		private Loading loading;
 		internal BookmarkStore bmstore;
+		internal ConnectionManager connections;
 
 		public MainWindow () {
 			this.add_from_file ("data/psbrowser.ui");
+
+			/* Setting up connection list */
+			this.connections = new ConnectionManager ();
 
 			// Getting/Creating important widgets
 			this.mwin = (Window) this.get_object ("mainWindow");
@@ -145,9 +149,13 @@ namespace PsBrowser.UI {
 			var iter = TreeIter ();
 
 			self.bmstore.get_iter (out iter, path);
-			var conn = new Connection ((Bookmark) iter.user_data);
-			conn.ref ();
-			conn.run ();
+			var bookmark = (Bookmark) iter.user_data;
+
+			if (!self.connections.has_key (bookmark.get_name ())) {
+				var conn = new Connection (bookmark);
+				self.connections.set (bookmark.get_name (), conn);
+				conn.run ();
+			}
 		}
 
 		private void setup_signals () {
