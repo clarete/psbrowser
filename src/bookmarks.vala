@@ -31,6 +31,11 @@ namespace PsBrowser {
 		public string service { get; set; }
 		public bool status { get; set; default = false; }
 
+		/** Returns the jid concatenated with the service and port */
+		public string get_name () {
+			return @"$jid:$service:$port";
+		}
+
 		/**
 		 * Builds a ''Xml.Node'' representing the bookmark object.
 		 */
