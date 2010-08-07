@@ -76,12 +76,6 @@ namespace PsBrowser.UI {
 			var column1 = new TreeViewColumn.with_attributes (
 				"JID", renderer, "markup", 1);
 			serverList.append_column (column1);
-
-			/*
-			var column2 = new TreeViewColumn.with_attributes (
-				"Service", renderer, "markup", 2);
-			serverList.append_column (column2);
-			*/
 		}
 
 		// -- Callbacks --
