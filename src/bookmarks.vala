@@ -29,6 +29,7 @@ namespace PsBrowser {
 		public string host { get; set; }
 		public int port { get; set; default = 5222; }
 		public string service { get; set; }
+		public bool status { get; set; default = false; }
 
 		/**
 		 * Builds a ''Xml.Node'' representing the bookmark object.

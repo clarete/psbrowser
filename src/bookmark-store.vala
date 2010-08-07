@@ -17,6 +17,7 @@
  */
 
 using Gtk;
+using Gdk;
 using Gee;
 
 namespace PsBrowser.UI {
@@ -25,6 +26,7 @@ namespace PsBrowser.UI {
 		private int stamp;
 
 		enum Columns {
+			STATUS,
 			JID,
 			SERVICE,
 			N_COLUMNS
@@ -92,6 +94,14 @@ namespace PsBrowser.UI {
 			/* Time to setup the correct value depending on the column */
 			value.init (this.column_headers[column]);
 			switch (column) {
+			case Columns.STATUS:
+				Pixbuf pixbuf;
+				if (bookmark.status)
+					pixbuf = new Pixbuf.from_file ("data/pixmaps/online.png");
+				else
+					pixbuf = new Pixbuf.from_file ("data/pixmaps/offline.png");
+				value.set_object (pixbuf);
+				break;
 			case Columns.JID:
 				value.set_string (bookmark.jid);
 				break;

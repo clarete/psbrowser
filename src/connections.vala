@@ -34,6 +34,7 @@ public class PsBrowser.Connection : Object {
 		Connection conn = (Connection) data2;
 		Iks pres = make_pres (ShowType.AVAILABLE, "Online");
 		client.send (pres);
+		conn.bookmark.status = true;
 		conn.authenticated ();
 		return 0;
 	}

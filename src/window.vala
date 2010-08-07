@@ -66,7 +66,12 @@ namespace PsBrowser.UI {
 			bmstore = new UI.BookmarkStore ();
 			serverList.set_model (bmstore);
 
-			// Renderers and columns
+			/* Renderers and columns */
+			var rendererp = new CellRendererPixbuf ();
+			var column0 = new TreeViewColumn.with_attributes (
+				"", rendererp, "pixbuf", 0);
+			serverList.append_column (column0);
+
 			var renderer = new CellRendererText ();
 			var column1 = new TreeViewColumn.with_attributes (
 				"JID", renderer, "markup", 1);
