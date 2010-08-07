@@ -107,6 +107,7 @@
         <child>
           <object class="GtkAlignment" id="alignment2">
             <property name="visible">True</property>
+            <property name="top_padding">2</property>
             <property name="bottom_padding">12</property>
             <property name="left_padding">12</property>
             <property name="right_padding">12</property>
@@ -124,7 +125,8 @@
                         <property name="visible">True</property>
                         <property name="xalign">0</property>
                         <property name="ypad">4</property>
-                        <property name="label" translatable="yes">Bookmarks</property>
+                        <property name="label" translatable="yes">&lt;b&gt;Bookmarks&lt;/b&gt;</property>
+                        <property name="use_markup">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -225,6 +227,7 @@
                   <object class="GtkHPaned" id="hpaned2">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="border_width">1</property>
                     <child>
                       <object class="GtkVBox" id="vbox4">
                         <property name="visible">True</property>
@@ -235,7 +238,8 @@
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">Nodes</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Nodes&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -302,7 +306,8 @@
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">Items</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Items&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
