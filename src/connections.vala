@@ -60,7 +60,7 @@ public class PsBrowser.Connection : Object {
 		this.xmpp.event_connect (
 			"authenticated", auth_cb, this);
 		this.xmpp.event_connect (
-			"authenticated-failed", auth_failed_cb, this);
+			"authentication-failed", auth_failed_cb, this);
 
 		/* Setting up taningia logging */
 		unowned Taningia.Log ilogger = this.xmpp.get_logger ();
