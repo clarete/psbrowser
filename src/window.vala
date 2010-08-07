@@ -26,6 +26,12 @@ namespace PsBrowser.UI {
 		internal BookmarkStore bmstore;
 		internal ConnectionManager connections;
 
+		enum NodeListColumns {
+			ICON,
+			NAME,
+			N_COLUMNS
+		}
+
 		public MainWindow () {
 			this.add_from_file ("data/psbrowser.ui");
 
@@ -40,6 +46,7 @@ namespace PsBrowser.UI {
 			this.setup_title ();
 			this.setup_loading ();
 			this.setup_bookmark_list ();
+			this.setup_node_list ();
 			this.connect_signals (this);
 		}
 
@@ -80,6 +87,30 @@ namespace PsBrowser.UI {
 			var column1 = new TreeViewColumn.with_attributes (
 				"JID", renderer, "markup", 1);
 			serverList.append_column (column1);
+		}
+
+		/** Sets up cellrenderers and columns for the node
+		 * treeview. */
+		private void setup_node_list () {
+			var node_list = (TreeView) this.get_object ("nodeList");
+
+			/* Setting up model */
+			var model = new TreeStore (
+				NodeListColumns.N_COLUMNS,
+				typeof (Gdk.Pixbuf),
+				typeof (string));
+			node_list.set_model (model);
+
+			/* Renderers and columns*/
+			var rendererp = new CellRendererPixbuf ();
+			var columnp = new TreeViewColumn.with_attributes (
+				"", rendererp, "pixbuf", 0);
+			node_list.append_column (columnp);
+
+			var renderer = new CellRendererText ();
+			var column = new TreeViewColumn.with_attributes (
+				"Node", renderer, "markup", 1);
+			node_list.append_column (column);
 		}
 
 		/* -- Callbacks -- */
