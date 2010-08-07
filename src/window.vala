@@ -151,9 +151,54 @@ namespace PsBrowser.UI {
 			this.bmstore.get_iter (out iter, path);
 			var bookmark = (Bookmark) iter.user_data;
 
+			/* No connection with the given bookmark? So let's try to
+			 * do it. */
 			if (!this.connections.has_key (bookmark.get_name ())) {
 				var conn = new Connection (bookmark);
+
+				/* It is important to put the connection in the
+				 * connection manager before authenticating successful
+				 * to avoid the needing of handling crazy users
+				 * activating the same connection a hundred times. */
 				this.connections.set (bookmark.get_name (), conn);
+
+				/* Handling the loading widget visibility by */
+				this.loading.ref_loading ();
+
+				/* If everything goes right, just unref the loading
+				 * widget. */
+				conn.authenticated.connect (() => {
+					this.loading.unref_loading ();
+				});
+
+				/* Humm, things went bad, it was not possible to
+				 * authenticate user with given credentials. Time to
+				 * feed the user back. */
+				conn.authfailed.connect (() => {
+					/* First of all, let's hide the loading widget. */
+					this.loading.unref_loading ();
+
+					/* Now, let's queue a message dialog to be shown
+					 * informing the user that his credentials are not
+					 * ok. */
+					Idle.add (() => {
+						var dialog = new MessageDialog.with_markup (
+							this.mwin,
+							DialogFlags.MODAL, MessageType.INFO,
+							ButtonsType.OK, "<b>Authentication failed</b>");
+						dialog.format_secondary_text (
+							"Edit bookmark options and then try again.");
+						dialog.run ();
+						dialog.destroy ();
+
+						/* It is important to drop the connection
+						 * object from the connection manager. The
+						 * user will not be able to try to connect
+						 * again otherwise.*/
+						this.connections.remove (bookmark.get_name ());
+						return false;
+					});
+				});
 				conn.run ();
 			}
 		}
