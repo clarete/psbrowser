@@ -6,6 +6,7 @@
     <property name="border_width">5</property>
     <property name="title" translatable="yes">New Bookmark</property>
     <property name="resizable">False</property>
+    <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
@@ -282,15 +283,15 @@
   </object>
   <object class="GtkSizeGroup" id="entrySizeGroup">
     <widgets>
-      <widget name="label2"/>
       <widget name="label1"/>
+      <widget name="label2"/>
     </widgets>
   </object>
   <object class="GtkSizeGroup" id="entrySizeGroup2">
     <widgets>
-      <widget name="label5"/>
-      <widget name="label6"/>
       <widget name="label4"/>
+      <widget name="label6"/>
+      <widget name="label5"/>
     </widgets>
   </object>
 </interface>

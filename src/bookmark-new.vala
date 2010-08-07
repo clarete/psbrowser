@@ -88,7 +88,7 @@ namespace PsBrowser.UI {
 			((Button) self.get_object ("buttonOk")).set_sensitive (sensitive);
 		}
 
-		public Bookmark? run () {
+		public Bookmark? get_bookmark () {
 			Bookmark bookmark = null;
 			if (dialog.run () == 1) {
 				bookmark = new Bookmark ();
@@ -104,8 +104,15 @@ namespace PsBrowser.UI {
 					((SpinButton) this.get_object ("portEntry"))
 				        .get_value_as_int ();
 			}
-			dialog.destroy ();
 			return bookmark;
+		}
+
+		public Bookmark? run () {
+			return this.get_bookmark ();
+		}
+
+		public void destroy () {
+			dialog.destroy ();
 		}
 	}
 }

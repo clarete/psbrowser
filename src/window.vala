@@ -23,7 +23,7 @@ namespace PsBrowser.UI {
 
 		private Window mwin;
 		private Loading loading;
-		private BookmarkStore bmstore;
+		internal BookmarkStore bmstore;
 
 		public MainWindow () {
 			this.add_from_file ("data/psbrowser.ui");
@@ -82,9 +82,29 @@ namespace PsBrowser.UI {
 			var self = (MainWindow) data;
 			var nbform = new UI.NewBookmarkForm (self.mwin);
 			var bookmark = nbform.run ();
-			if (bookmark != null) {
-				self.bmstore.append_data (bookmark);
+			if (bookmark == null) {
+				/* User have canceled the add operation. Time to
+				 * destroy the form. */
+				nbform.destroy ();
 			}
+
+			while (self.bmstore.contains (bookmark)) {
+				/* We have an identical bookmark already added, let's
+				 * feed the user back. */
+				var dialog = new MessageDialog.with_markup (self.mwin,
+					DialogFlags.MODAL, MessageType.INFO,
+					ButtonsType.OK, "<b>Bookmark already exists</b>");
+				dialog.format_secondary_text (
+					"Please change the JID or service info and try again");
+				dialog.run ();
+				dialog.destroy ();
+				bookmark = nbform.get_bookmark ();
+			}
+
+			/* It's everything ok, let's add the bookmark to our
+			 * list model and destroy the form. */
+			self.bmstore.append_data (bookmark);
+			nbform.destroy ();
 		}
 
 		static void bt_bookmark_remove_cb (Button bt, void *data) {
