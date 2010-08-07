@@ -86,6 +86,7 @@ namespace PsBrowser.UI {
 				/* User have canceled the add operation. Time to
 				 * destroy the form. */
 				nbform.destroy ();
+				return;
 			}
 
 			while (self.bmstore.contains (bookmark)) {
@@ -99,6 +100,12 @@ namespace PsBrowser.UI {
 				dialog.run ();
 				dialog.destroy ();
 				bookmark = nbform.get_bookmark ();
+
+				/* User have gave up on adding a new bookmark */
+				if (bookmark == null) {
+					nbform.destroy ();
+					return;
+				}
 			}
 
 			/* It's everything ok, let's add the bookmark to our
