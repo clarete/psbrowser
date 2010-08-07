@@ -25,8 +25,8 @@ namespace PsBrowser.UI {
 		private int stamp;
 
 		enum Columns {
-			SERVICE,
 			JID,
+			SERVICE,
 			N_COLUMNS
 		}
 
@@ -34,10 +34,13 @@ namespace PsBrowser.UI {
 			this.stamp = (int) Random.next_int ();
 			this.column_headers = new ArrayList<Type> ();
 
-			// SERVICE
+			/* STATUS */
+			this.column_headers.add (typeof (Gdk.Pixbuf));
+
+			/* JID */
 			this.column_headers.add(typeof (string));
 
-			// JID
+			/* SERVICE */
 			this.column_headers.add(typeof (string));
 		}
 
@@ -89,11 +92,11 @@ namespace PsBrowser.UI {
 			/* Time to setup the correct value depending on the column */
 			value.init (this.column_headers[column]);
 			switch (column) {
-			case Columns.SERVICE:
-				value.set_string (bookmark.service);
-				break;
 			case Columns.JID:
 				value.set_string (bookmark.jid);
+				break;
+			case Columns.SERVICE:
+				value.set_string (bookmark.service);
 				break;
 			}
 		}

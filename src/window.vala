@@ -68,12 +68,15 @@ namespace PsBrowser.UI {
 
 			// Renderers and columns
 			var renderer = new CellRendererText ();
-			var column = new TreeViewColumn.with_attributes (
-				"Service", renderer, "markup", 0);
-			serverList.append_column (column);
 			var column1 = new TreeViewColumn.with_attributes (
 				"JID", renderer, "markup", 1);
 			serverList.append_column (column1);
+
+			/*
+			var column2 = new TreeViewColumn.with_attributes (
+				"Service", renderer, "markup", 2);
+			serverList.append_column (column2);
+			*/
 		}
 
 		// -- Callbacks --
@@ -145,7 +148,6 @@ namespace PsBrowser.UI {
 			self.bmstore.get_iter (out iter, path);
 			var conn = new Connection ((Bookmark) iter.user_data);
 			conn.ref ();
-			stdout.printf ("JID: %s\n", conn.xmpp.get_jid ());
 			conn.run ();
 		}
 
