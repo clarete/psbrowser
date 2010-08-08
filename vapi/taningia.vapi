@@ -16,8 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Iksemel;
+
 [CCode (cheader_filename="taningia/taningia.h")]
 namespace Taningia {
+
+	[CCode (cname="ta_free_func_t", has_target=false)]
+	public delegate void FreeFunc (void* user_data);
 
 	[CCode (cname="ta_log_handler_func_t", has_target=false)]
 	public delegate int LogHandlerFunc (Log log, LogLevel level,
@@ -57,6 +62,10 @@ namespace Taningia {
 		public delegate int ClientHookFunc (Client client, void *data1,
 											void *data2);
 
+		[CCode (cname="ta_xmpp_client_answer_cb_t", has_target=false)]
+		public delegate int ClientAnswerCb (Client client, Iks node,
+											void *data);
+
 		[Compact]
 		[CCode (cname="ta_xmpp_client_t",
 				ref_function="ta_object_ref",
@@ -77,11 +86,19 @@ namespace Taningia {
 			public unowned Log get_logger ();
 			public int connect ();
 			public int disconnect ();
-			public int send (Iksemel.Iks node);
+			public int send (Iks node);
+			public int send_and_filter (Iks node, ClientAnswerCb cb, void *data,
+				FreeFunc? free_cb=null);
 			public int run (bool detach);
 			public bool is_running ();
 			public int event_connect (string event, ClientHookFunc hook,
 									  void *data);
 		}
+	}
+
+	[CCode (cheader_filename="taningia/taningia.h")]
+	namespace Pubsub {
+		[CCode (cname="ta_pubsub_node_query_nodes")]
+		public Iks node_query_nodes (string from, string to, string? node);
 	}
 }
