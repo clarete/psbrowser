@@ -98,13 +98,13 @@ namespace Iksemel {
 		public unowned Iks attr ();
 
 		[CCode (cname="iks_find")]
-		public unowned Iks find (string name);
+		public unowned Iks? find (string name);
 
 		[CCode (cname="iks_find_cdata")]
-		public unowned Iks find_cdata (string name);
+		public unowned string? find_cdata (string name);
 
 		[CCode (cname="iks_find_attrib")]
-		public unowned Iks find_attrib (string name);
+		public unowned string? find_attrib (string name);
 
 		[CCode (cname="iks_string")]
 		private static unowned string _string (void *nil, Iks x);
