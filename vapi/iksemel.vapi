@@ -74,10 +74,10 @@ namespace Iksemel {
 		public unowned Iks next ();
 
 		[CCode (cname="iks_next_tag")]
-		public unowned Iks next_tag ();
+		public unowned Iks? next_tag ();
 
 		[CCode (cname="iks_prev")]
-		public unowned Iks prev ();
+		public unowned Iks? prev ();
 
 		[CCode (cname="iks_prev_tag")]
 		public unowned Iks prev_tag ();
