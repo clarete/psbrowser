@@ -17,6 +17,8 @@
  */
 
 using Gtk;
+using Taningia;
+using Iksemel;
 
 namespace PsBrowser.UI {
 	public class MainWindow : Builder {
@@ -113,6 +115,83 @@ namespace PsBrowser.UI {
 			node_list.append_column (column);
 		}
 
+		/** Parses a list of nodes when they're received from the xmpp
+		 * client of a connection. */
+		private static int parse_list_nodes (Xmpp.Client client,
+											 Iks stanza, void *data) {
+			var cbdata = (HashTable<string, void*> *) data;
+			var self = (MainWindow) cbdata->lookup ("instance");
+			var conn = (Connection) cbdata->lookup ("connection");
+
+			var treeview = (TreeView) self.get_object ("nodeList");
+			var model = (TreeStore) treeview.get_model ();
+			var parent_iter = (TreeIter?) cbdata->lookup ("user_data");
+
+			/* Traversing to the iq > query > item node. */
+			unowned Iks node = stanza.find ("query").child ();
+
+			/* Time to add found node names to their parent came in
+			 * the data attribute. */
+			while (node != null) {
+				TreeIter iter;
+				var node_name = node.find_attrib ("node");
+				if (node_name == null)
+					break;
+				model.append (out iter, parent_iter);
+				model.set (iter, NodeListColumns.NAME, node_name);
+
+				/* Calling list_nodes again but now passing the child
+				 * found. */
+				self.list_nodes (conn, node_name, iter);
+				node = node.next ();
+			}
+
+			delete cbdata;
+			return 0;
+		}
+
+		/** Builds a stanza to query for available nodes and sends it
+		 * to the pubsub service.
+		 *
+		 * It is also important to note that this function sets the
+		 * parse_list_nodes function as the response callback for this
+		 * operation.
+		 *
+		 * @param conn Is the connection that will be used to send the
+		 *  query command.
+		 *
+		 * @param node_name Is the node that will be queried for its
+		 *  childs. If null is passed, then the root node will be
+		 *  queried.
+		 *
+		 * @param node_iter Is a Gtk.TreeIter containing the node
+		 *  being queried. It will be used to build a treeview with
+		 *  found nodes. */
+		private void list_nodes (Connection conn,
+								 string? node_name=null,
+								 TreeIter? node_iter=null) {
+			HashTable<string,void*>* cbdata =
+				new HashTable<string,void*> (str_hash, str_equal);
+			var iq = Pubsub.node_query_nodes (
+				conn.bookmark.jid, conn.bookmark.service, node_name);
+
+			/* Asking to show the loading widget. */
+			this.loading.ref_loading ();
+
+			/* Sending the stanza and registering parse_list_nodes as
+			 * the answer callback. */
+			cbdata->insert ("instance", this);
+			cbdata->insert ("connection", conn);
+			cbdata->insert ("user_data", (void *) node_iter);
+			var res = conn.xmpp.send_and_filter (
+				iq, (Xmpp.ClientAnswerCb) parse_list_nodes, cbdata);
+
+			/* We have to give up on show loading if something goes
+			 * wrong. */
+			if (res == 0)
+				this.loading.unref_loading ();
+		}
+
 		/* -- Callbacks -- */
 
 		[CCode (instance_pos=-1)]
@@ -197,9 +276,18 @@ namespace PsBrowser.UI {
 				this.loading.ref_loading ();
 
 				/* If everything goes right, just unref the loading
-				 * widget. */
+				 * widget and call the list_nodes method. */
 				conn.authenticated.connect (() => {
 					this.loading.unref_loading ();
+
+					/* The user has clicked in a bookmark, so we have
+					 * to clear the model in order to show only
+					 * entries of that bookmark.  */
+					var node_tree = (TreeView) this.get_object ("nodeList");
+					var model = (TreeStore) node_tree.get_model ();
+					model.clear ();
+
+					this.list_nodes (conn);
 				});
 
 				/* Humm, things went bad, it was not possible to
