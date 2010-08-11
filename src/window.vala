@@ -331,6 +331,18 @@ namespace PsBrowser.UI {
 			}
 		}
 
+		/* -- nodeList callbacks -- */
+
+		[CCode (instance_pos=-1)]
+		public bool on_node_list_button_press_cb (Widget widget,
+												  Gdk.EventButton evt) {
+			if (evt.button == 3) {
+				var menu = (Menu) this.get_object ("nodeCtxMenu");
+				menu.popup (null, null, null, evt.button, evt.time);
+			}
+			return false;
+		}
+
 		/* -- Public methods -- */
 
 		/** Calls the show_all() method of the main window. */
