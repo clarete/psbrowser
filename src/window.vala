@@ -130,7 +130,7 @@ namespace PsBrowser.UI {
 
 			var treeview = (TreeView) self.get_object ("nodeList");
 			var model = (TreeStore) treeview.get_model ();
-			var parent_iter = (TreeIter?) cbdata->lookup ("user_data");
+			var parent_path = (TreePath *) cbdata->lookup ("user_data");
 
 			/* Traversing to the iq > query > item node. */
 			unowned Iks node = stanza.find ("query").child ();
@@ -138,17 +138,28 @@ namespace PsBrowser.UI {
 			/* Time to add found node names to their parent came in
 			 * the data attribute. */
 			while (node != null) {
-				TreeIter iter;
+				TreeIter iter, parent;
 				var node_name = node.find_attrib ("node");
 				if (node_name == null)
 					break;
-				model.append (out iter, parent_iter);
+
+				if (parent_path != null) {
+					model.get_iter (out parent, parent_path);
+					model.append (out iter, parent);
+				} else {
+					model.append (out iter, null);
+				}
 				model.set (iter, NodeListColumns.NAME, node_name);
 
 				/* Calling list_nodes again but now passing the child
 				 * found. */
-				self.list_nodes (conn, node_name, iter);
+				var path = (TreePath*) model.get_path (iter);
+				self.list_nodes (conn, node_name, path);
 				node = node.next ();
+			}
+
+			if (parent_path != null) {
+				delete parent_path;
 			}
 
 			delete cbdata;
@@ -174,7 +185,7 @@ namespace PsBrowser.UI {
 		 *  found nodes. */
 		private void list_nodes (Connection conn,
 								 string? node_name=null,
-								 TreeIter? node_iter=null) {
+								 TreePath? node_path=null) {
 			HashTable<string,void*>* cbdata =
 				new HashTable<string,void*> (str_hash, str_equal);
 			var iq = Pubsub.node_query_nodes (
@@ -187,7 +198,7 @@ namespace PsBrowser.UI {
 			 * the answer callback. */
 			cbdata->insert ("instance", this);
 			cbdata->insert ("connection", conn);
-			cbdata->insert ("user_data", (void *) node_iter);
+			cbdata->insert ("user_data", (void *) node_path);
 			var res = conn.xmpp.send_and_filter (
 				iq, (Xmpp.ClientAnswerCb) parse_list_nodes, cbdata);
 
