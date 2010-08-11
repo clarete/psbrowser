@@ -113,6 +113,8 @@ namespace PsBrowser.UI {
 			node_list.append_column (column);
 		}
 
+		/* -- node listing functions -- */
+
 		/** Parses a list of nodes when they're received from the xmpp
 		 * client of a connection. */
 		private static int parse_list_nodes (Xmpp.Client client,
@@ -331,6 +333,8 @@ namespace PsBrowser.UI {
 			}
 		}
 
+		/* -- item listing functions -- */
+
 		/* -- nodeList callbacks -- */
 
 		[CCode (instance_pos=-1)]
@@ -341,6 +345,17 @@ namespace PsBrowser.UI {
 				menu.popup (null, null, null, evt.button, evt.time);
 			}
 			return false;
+		}
+
+		[CCode (instance_pos=-1)]
+		public void on_node_list_row_activated_cb (TreeView treeview,
+												   TreePath path,
+												   TreeViewColumn column,
+												   void *data) {
+			TreeIter iter;
+			Value val;
+			treeview.model.get_iter (out iter, path);
+			treeview.model.get_value (iter, NodeListColumns.NAME, out val);
 		}
 
 		/* -- Public methods -- */

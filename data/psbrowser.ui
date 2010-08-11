@@ -258,6 +258,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <signal name="button_press_event" handler="ps_browser_ui_main_window_on_node_list_button_press_cb"/>
+                                <signal name="row_activated" handler="ps_browser_ui_main_window_on_node_list_row_activated_cb"/>
                               </object>
                             </child>
                           </object>
