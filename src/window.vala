@@ -34,7 +34,6 @@ namespace PsBrowser.UI {
 		internal ConnectionManager connections;
 
 		enum NodeListColumns {
-			ICON,
 			NAME,
 			N_COLUMNS
 		}
@@ -104,19 +103,13 @@ namespace PsBrowser.UI {
 			/* Setting up model */
 			var model = new TreeStore (
 				NodeListColumns.N_COLUMNS,
-				typeof (Gdk.Pixbuf),
 				typeof (string));
 			node_list.set_model (model);
 
 			/* Renderers and columns */
-			var rendererp = new CellRendererPixbuf ();
-			var columnp = new TreeViewColumn.with_attributes (
-				"", rendererp, "pixbuf", 0);
-			node_list.append_column (columnp);
-
 			var renderer = new CellRendererText ();
 			var column = new TreeViewColumn.with_attributes (
-				"Node", renderer, "markup", 1);
+				"Node", renderer, "markup", 0);
 			node_list.append_column (column);
 		}
 
