@@ -21,6 +21,11 @@ using Taningia;
 using Iksemel;
 
 namespace PsBrowser.UI {
+	/** The main window of the application.
+	 *
+	 * This basically manages the three treeviews available for the
+	 * user. The bookmarks, node and item lists. This class also
+	 * implements all callbacks fired by the user interface.  */
 	public class MainWindow : Builder {
 
 		private Window mwin;
@@ -40,11 +45,11 @@ namespace PsBrowser.UI {
 			/* Setting up connection list */
 			this.connections = new ConnectionManager ();
 
-			// Getting/Creating important widgets
+			/* Getting/Creating important widgets */
 			this.mwin = (Window) this.get_object ("mainWindow");
 			this.loading = new UI.Loading ();
 
-			// Calling all layout setup methods
+			/* Calling all layout setup methods */
 			this.setup_title ();
 			this.setup_loading ();
 			this.setup_bookmark_list ();
@@ -52,7 +57,7 @@ namespace PsBrowser.UI {
 			this.connect_signals (this);
 		}
 
-		// -- Layout stuff --
+		/* -- Layout stuff -- */
 
 		/** Sets up the fancy white header */
 		private void setup_title () {
@@ -75,7 +80,7 @@ namespace PsBrowser.UI {
 		private void setup_bookmark_list () {
 			var serverList = (TreeView) this.get_object ("serverList");
 
-			// Model setup
+			/* Model setup */
 			bmstore = new UI.BookmarkStore ();
 			serverList.set_model (bmstore);
 
@@ -103,7 +108,7 @@ namespace PsBrowser.UI {
 				typeof (string));
 			node_list.set_model (model);
 
-			/* Renderers and columns*/
+			/* Renderers and columns */
 			var rendererp = new CellRendererPixbuf ();
 			var columnp = new TreeViewColumn.with_attributes (
 				"", rendererp, "pixbuf", 0);
@@ -322,8 +327,9 @@ namespace PsBrowser.UI {
 			}
 		}
 
-		// -- Public methods --
+		/* -- Public methods -- */
 
+		/** Calls the show_all() method of the main window. */
 		public void run () {
 			this.mwin.show_all ();
 		}
