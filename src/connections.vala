@@ -20,6 +20,11 @@ using Gee;
 using Taningia;
 using Iksemel;
 
+errordomain ConnectionError {
+	UNABLE_TO_CONNECT,
+	UNABLE_TO_RUN
+}
+
 /** Manages a single connection to a pubsub (xmpp) service. */
 public class PsBrowser.Connection : Object {
 	public signal void connected ();
@@ -69,9 +74,13 @@ public class PsBrowser.Connection : Object {
 	}
 
 	/** Calls the connect() and run() methods of the XMPP client. */
-	public void run () {
-		this.xmpp.connect ();
-		this.xmpp.run (true);
+	public void run () throws ConnectionError {
+		if (this.xmpp.connect () != 1)
+			throw new ConnectionError.UNABLE_TO_CONNECT (
+				"Unable to connect to " + this.bookmark.host);
+		if (this.xmpp.run (true) > 0)
+			throw new ConnectionError.UNABLE_TO_RUN (
+				"Error while running xmpp client");
 	}
 }
 
