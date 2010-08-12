@@ -39,7 +39,10 @@ namespace PsBrowser.UI {
 		 * the same time.
 		 */
 		private void _handle_loading () {
-			this.set_visible (this._is_loading > 0);
+			Idle.add (() => {
+				this.set_visible (this._is_loading > 0);
+				return false;
+			});
 		}
 
 		/**
