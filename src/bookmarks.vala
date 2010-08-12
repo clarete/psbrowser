@@ -79,6 +79,7 @@ namespace PsBrowser {
 
 		/** Loads bookmarks from an XML string */
 		public BookmarkList.from_string (string xml) {
+			this ();
 			Doc* doc = Parser.parse_doc (xml);
 			Xml.Node root = doc->get_root_element ();
 			for (Xml.Node* iter = root.children; iter != null;
@@ -93,7 +94,6 @@ namespace PsBrowser {
 					this.add (bookmark);
 				}
 			}
-			this ();
 		}
 
 		/** Write an xml with all bookmarks held by this list */
