@@ -7,6 +7,7 @@ psbrowser_SOURCES = \
 	bookmarks.vala \
 	bookmark-store.vala \
 	bookmark-new.vala \
+	resources.vala \
 	window.vala \
 	connections.vala \
 	main.vala

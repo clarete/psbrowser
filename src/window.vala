@@ -80,7 +80,12 @@ namespace PsBrowser.UI {
 			var serverList = (TreeView) this.get_object ("serverList");
 
 			/* Model setup */
-			bmstore = new UI.BookmarkStore ();
+			try {
+				bmstore = new UI.BookmarkStore.from_file (
+					Resources.get_conf_file ("bookmarks.xml"));
+			} catch (FileError e) {
+				bmstore = new UI.BookmarkStore ();
+			}
 			serverList.set_model (bmstore);
 
 			/* Renderers and columns */
@@ -238,6 +243,7 @@ namespace PsBrowser.UI {
 			/* It's everything ok, let's add the bookmark to our
 			 * list model and destroy the form. */
 			this.bmstore.append_data (bookmark);
+			this.bmstore.save (Resources.get_conf_file ("bookmarks.xml"));
 			nbform.destroy ();
 		}
 
@@ -260,6 +266,7 @@ namespace PsBrowser.UI {
 				foreach (var row in rows) {
 					this.bmstore.remove_index (row.get_indices ()[0]);
 				}
+				this.bmstore.save (Resources.get_conf_file ("bookmarks.xml"));
 			}
 			dialog.destroy ();
 		}
