@@ -23,4 +23,8 @@ namespace PsBrowser.Resources {
 		DirUtils.create_with_parents (conf_dir, 0775);
 		return Path.build_filename (conf_dir, basename);
 	}
+
+	public string get_resource_file (string basename) {
+		return Path.build_filename ("", basename);
+	}
 }

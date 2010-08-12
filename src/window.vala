@@ -39,7 +39,12 @@ namespace PsBrowser.UI {
 		}
 
 		public MainWindow () {
-			this.add_from_file ("data/psbrowser.ui");
+			try {
+				this.add_from_file (
+					Resources.get_resource_file ("data/psbrowser.ui"));
+			} catch (Error e) {
+				critical ("Unable to load ui definition file: %s", e.message);
+			}
 
 			/* Setting up connection list */
 			this.connections = new ConnectionManager ();

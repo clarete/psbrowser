@@ -23,7 +23,12 @@ namespace PsBrowser.UI {
 		Dialog dialog;
 
 		public NewBookmarkForm (Window? parent) {
-			this.add_from_file ("data/newbookmark.ui");
+			try {
+				this.add_from_file (
+					Resources.get_resource_file ("data/newbookmark.ui"));
+			} catch (Error e) {
+				critical ("Unable to load ui definition file: %s", e.message);
+			}
 			this.dialog = (Dialog) this.get_object ("mainDialog");
 			if (parent != null)
 				this.dialog.set_transient_for (parent);

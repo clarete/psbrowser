@@ -96,11 +96,19 @@ namespace PsBrowser.UI {
 			switch (column) {
 			case Columns.STATUS:
 				Pixbuf pixbuf;
-				if (bookmark.status)
-					pixbuf = new Pixbuf.from_file ("data/pixmaps/online.png");
-				else
-					pixbuf = new Pixbuf.from_file ("data/pixmaps/offline.png");
-				value.set_object (pixbuf);
+				try {
+					if (bookmark.status)
+						pixbuf = new Pixbuf.from_file (
+							Resources.get_resource_file (
+								"data/pixmaps/online.png"));
+					else
+						pixbuf = new Pixbuf.from_file (
+							Resources.get_resource_file (
+								"data/pixmaps/offline.png"));
+					value.set_object (pixbuf);
+				} catch (Error e) {
+					critical ("Unable to load pixbuf file: %s", e.message);
+				}
 				break;
 			case Columns.JID:
 				value.set_string (bookmark.jid);
