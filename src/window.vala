@@ -341,7 +341,20 @@ namespace PsBrowser.UI {
 						return false;
 					});
 				});
-				conn.run ();
+
+				try {
+					conn.run ();
+				} catch (ConnectionError e) {
+					this.loading.unref_loading ();
+					this.connections.remove (bookmark.get_name ());
+					var dialog = new MessageDialog.with_markup (
+						this.mwin,
+						DialogFlags.MODAL, MessageType.ERROR,
+						ButtonsType.OK, "<b>Connection failed</b>");
+					dialog.format_secondary_text (e.message);
+					dialog.run ();
+					dialog.destroy ();
+				}
 			}
 		}
 
