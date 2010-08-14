@@ -209,6 +209,7 @@
                                           <object class="GtkComboBox" id="publish_model">
                                             <property name="visible">True</property>
                                             <property name="model">pm_store</property>
+                                            <property name="active">0</property>
                                             <child>
                                               <object class="GtkCellRendererText" id="pm_renderer"/>
                                               <attributes>
@@ -257,6 +258,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -280,6 +282,7 @@
                                               <object class="GtkComboBox" id="access_model">
                                                 <property name="visible">True</property>
                                                 <property name="model">am_store</property>
+                                                <property name="active">1</property>
                                                 <child>
                                                   <object class="GtkCellRendererText" id="am_renderer"/>
                                                   <attributes>
@@ -370,6 +373,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -382,6 +386,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -512,6 +517,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -548,6 +554,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -560,6 +567,7 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
+                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -616,7 +624,6 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
-                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                           </object>
                                           <packing>
@@ -629,7 +636,6 @@
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
-                                            <property name="active">True</property>
                                             <property name="draw_indicator">True</property>
                                             <property name="group">send_last_published_item</property>
                                           </object>
@@ -735,11 +741,11 @@
   <object class="GtkSizeGroup" id="sizegroupEntries"/>
   <object class="GtkSizeGroup" id="sizegroupSubEntries">
     <widgets>
-      <widget name="publish_model"/>
-      <widget name="access_model"/>
-      <widget name="max_items"/>
-      <widget name="max_payload_size"/>
       <widget name="type"/>
+      <widget name="max_payload_size"/>
+      <widget name="max_items"/>
+      <widget name="access_model"/>
+      <widget name="publish_model"/>
     </widgets>
   </object>
   <object class="GtkListStore" id="pm_store">
