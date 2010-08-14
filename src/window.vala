@@ -374,9 +374,15 @@ namespace PsBrowser.UI {
 		}
 
 		[CCode (instance_pos=-1)]
-		public bool on_node_list_button_press_cb (Widget widget,
-												  Gdk.EventButton evt) {
+		public bool on_node_list_button_release_cb (Widget widget,
+													Gdk.EventButton evt) {
 			if (evt.button == 3) {
+				var treeview = (TreeView) this.get_object ("nodeList");
+				var selection = treeview.get_selection ();
+				var rows = selection.get_selected_rows (null);
+				if (rows.length () == 0)
+					return false;
+
 				var menu = (Menu) this.get_object ("nodeCtxMenu");
 				menu.popup (null, null, null, evt.button, evt.time);
 			}
