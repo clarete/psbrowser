@@ -279,6 +279,13 @@
                                             <child>
                                               <object class="GtkComboBox" id="access_model">
                                                 <property name="visible">True</property>
+                                                <property name="model">am_store</property>
+                                                <child>
+                                                  <object class="GtkCellRendererText" id="am_renderer"/>
+                                                  <attributes>
+                                                    <attribute name="text">0</attribute>
+                                                  </attributes>
+                                                </child>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -728,11 +735,11 @@
   <object class="GtkSizeGroup" id="sizegroupEntries"/>
   <object class="GtkSizeGroup" id="sizegroupSubEntries">
     <widgets>
-      <widget name="type"/>
-      <widget name="max_payload_size"/>
-      <widget name="max_items"/>
-      <widget name="access_model"/>
       <widget name="publish_model"/>
+      <widget name="access_model"/>
+      <widget name="max_items"/>
+      <widget name="max_payload_size"/>
+      <widget name="type"/>
     </widgets>
   </object>
   <object class="GtkListStore" id="pm_store">
@@ -749,6 +756,29 @@
       </row>
       <row>
         <col id="0" translatable="yes">open</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="am_store">
+    <columns>
+      <!-- column-name models -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">authorize</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">open</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">presence</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">roster</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">whitelist</col>
       </row>
     </data>
   </object>
