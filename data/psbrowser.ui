@@ -386,23 +386,16 @@
   <object class="GtkMenu" id="nodeCtxMenu">
     <property name="visible">True</property>
     <child>
-      <object class="GtkImageMenuItem" id="edit">
-        <property name="label">gtk-edit</property>
+      <object class="GtkImageMenuItem" id="newnode">
+        <property name="label" translatable="yes">_Add child node</property>
         <property name="visible">True</property>
         <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
+        <property name="image">image7</property>
+        <property name="use_stock">False</property>
       </object>
     </child>
     <child>
-      <object class="GtkImageMenuItem" id="delete">
-        <property name="label">gtk-delete</property>
-        <property name="visible">True</property>
-        <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
-      </object>
-    </child>
-    <child>
-      <object class="GtkSeparatorMenuItem" id="menuitem1">
+      <object class="GtkSeparatorMenuItem" id="sep2">
         <property name="visible">True</property>
       </object>
     </child>
@@ -420,5 +413,30 @@
         <property name="use_underline">True</property>
       </object>
     </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="sep1">
+        <property name="visible">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkImageMenuItem" id="edit">
+        <property name="label">gtk-edit</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkImageMenuItem" id="delete">
+        <property name="label">gtk-delete</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkImage" id="image7">
+    <property name="visible">True</property>
+    <property name="stock">gtk-add</property>
   </object>
 </interface>
