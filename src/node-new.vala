@@ -18,6 +18,7 @@
 
 using Gtk;
 
+/** New node form */
 public class PsBrowser.UI.NewNodeForm : Builder {
 	Dialog dialog;
 
@@ -31,13 +32,25 @@ public class PsBrowser.UI.NewNodeForm : Builder {
 		this.dialog = (Dialog) this.get_object ("mainDialog");
 		if (parent != null)
 			this.dialog.set_transient_for (parent);
+		this.connect_signals (this);
 	}
 
+	/** Calls the dialog.run () method */
 	public void run () {
 		dialog.run ();
 	}
 
+	/** Calls the dialog destructor method */
 	public void destroy () {
 		dialog.destroy ();
+	}
+
+	/** Validates the content of all important fields in the new
+	 * bookmark form and set the ok button sensitivity depending on
+	 * the validation result. */
+	[CCode (instance_pos=-1)]
+	public void validate (Entry editable) {
+		bool sensitive = editable.get_text ().length > 0;
+		((Widget) this.get_object ("btOk")).set_sensitive (sensitive);
 	}
 }

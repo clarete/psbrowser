@@ -46,6 +46,7 @@
                     <property name="can_focus">True</property>
                     <property name="invisible_char">&#x25CF;</property>
                     <property name="activates_default">True</property>
+                    <signal name="changed" handler="ps_browser_ui_new_node_form_validate"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -720,11 +721,11 @@
   <object class="GtkSizeGroup" id="sizegroupEntries"/>
   <object class="GtkSizeGroup" id="sizegroupSubEntries">
     <widgets>
-      <widget name="type"/>
-      <widget name="max_payload_size"/>
-      <widget name="max_items"/>
-      <widget name="access_model"/>
       <widget name="publish_model"/>
+      <widget name="access_model"/>
+      <widget name="max_items"/>
+      <widget name="max_payload_size"/>
+      <widget name="type"/>
     </widgets>
   </object>
 </interface>
