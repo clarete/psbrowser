@@ -365,7 +365,11 @@ namespace PsBrowser.UI {
 		[CCode (instance_pos=-1)]
 		public void bt_node_add_cb (Button bt) {
 			var newform = new UI.NewNodeForm (this.mwin);
-			newform.run ();
+			var node = newform.get_node ("a", "b");
+
+			if (node != null) {
+				debug (node.to_string ());
+			}
 			newform.destroy ();
 		}
 
