@@ -100,5 +100,10 @@ namespace Taningia {
 	namespace Pubsub {
 		[CCode (cname="ta_pubsub_node_query_nodes")]
 		public Iks node_query_nodes (string from, string to, string? node);
+
+		[CCode (cname="ta_pubsub_node_createv")]
+		public Iks node_createv (
+			string from, string to, string node,
+			[CCode (array_length=false)] string[] conf_params);
 	}
 }
