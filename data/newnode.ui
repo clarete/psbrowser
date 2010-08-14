@@ -253,7 +253,7 @@
                                         <property name="visible">True</property>
                                         <property name="orientation">vertical</property>
                                         <child>
-                                          <object class="GtkCheckButton" id="checkbutton7">
+                                          <object class="GtkCheckButton" id="subscribe">
                                             <property name="label" translatable="yes">Whether to allow subscriptions</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
