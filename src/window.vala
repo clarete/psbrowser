@@ -363,6 +363,13 @@ namespace PsBrowser.UI {
 		/* -- nodeList callbacks -- */
 
 		[CCode (instance_pos=-1)]
+		public void bt_node_add_cb (Button bt) {
+			var newform = new UI.NewNodeForm (this.mwin);
+			newform.run ();
+			newform.destroy ();
+		}
+
+		[CCode (instance_pos=-1)]
 		public bool on_node_list_button_press_cb (Widget widget,
 												  Gdk.EventButton evt) {
 			if (evt.button == 3) {

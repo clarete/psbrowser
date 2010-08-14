@@ -274,6 +274,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
+                                <signal name="clicked" handler="ps_browser_ui_main_window_bt_node_add_cb"/>
                                 <child>
                                   <object class="GtkImage" id="image2">
                                     <property name="visible">True</property>
@@ -396,6 +397,7 @@
       <object class="GtkImageMenuItem" id="delete">
         <property name="label">gtk-delete</property>
         <property name="visible">True</property>
+        <property name="use_underline">True</property>
         <property name="use_stock">True</property>
       </object>
     </child>
