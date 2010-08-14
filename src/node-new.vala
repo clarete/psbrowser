@@ -23,15 +23,26 @@ public class PsBrowser.UI.NewNodeForm : Builder {
 	Dialog dialog;
 
 	public NewNodeForm (Window? parent) {
+		/* Loading (or trying to load) the resource that contains the
+		 * UI definition */
 		try {
 			this.add_from_file (
 				Resources.get_resource_file ("data/newnode.ui"));
 		} catch (Error e) {
 			critical ("Unable to load ui definition file: %s", e.message);
 		}
+
+		/* Setting up the main dialog var */
 		this.dialog = (Dialog) this.get_object ("mainDialog");
 		if (parent != null)
 			this.dialog.set_transient_for (parent);
+
+		/* Setting default values for "When to send the last published
+		 * item" radio buttons */
+		((RadioButton) this.get_object ("send_last_published_item2"))
+			.set_active (true);
+
+		/* Connecting signals declared in glade to this context */
 		this.connect_signals (this);
 	}
 
