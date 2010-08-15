@@ -363,6 +363,12 @@ public class PsBrowser.UI.MainWindow : Builder {
 
 	/* -- nodeList callbacks -- */
 
+	private static int parse_node_create (Xmpp.Client client, Iks stanza,
+										  void *data) {
+		debug (stanza.to_string ());
+		return 0;
+	}
+
 	[CCode (instance_pos=-1)]
 	public void bt_node_add_cb (Button bt) {
 		if (this.selected_connection == null)
@@ -373,7 +379,17 @@ public class PsBrowser.UI.MainWindow : Builder {
 
 		/* We have a good Iks node, let's send it to the server */
 		if (node != null) {
-			debug (node.to_string ());
+			/* Requesting the loading widget to be shown */
+			this.loading.ref_loading ();
+
+			/* Sending the stanza */
+			var res = this.selected_connection.xmpp.send_and_filter (
+				node, (Xmpp.ClientAnswerCb) parse_node_create, null);
+
+			/* If sending fails imediatelly, request the hide of
+			 * loading widget. */
+			if (res == 0)
+				this.loading.unref_loading ();
 		}
 		newform.destroy ();
 	}
