@@ -5,7 +5,6 @@
   <object class="GtkDialog" id="mainDialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Create a New Node</property>
-    <property name="resizable">False</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
@@ -162,7 +161,7 @@
             <child>
               <object class="GtkScrolledWindow" id="scrolledwindow1">
                 <property name="width_request">530</property>
-                <property name="height_request">280</property>
+                <property name="height_request">180</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hscrollbar_policy">automatic</property>
@@ -302,7 +301,6 @@
                                         </child>
                                         <child>
                                           <object class="GtkLabel" id="label3">
-                                            <property name="visible">True</property>
                                             <property name="xalign">0</property>
                                             <property name="ypad">6</property>
                                             <property name="label" translatable="yes">Roster groups allowed to subscribe to this node (one per line)</property>
@@ -314,7 +312,6 @@
                                         <child>
                                           <object class="GtkAlignment" id="alignment2">
                                             <property name="height_request">40</property>
-                                            <property name="visible">True</property>
                                             <property name="left_padding">12</property>
                                             <child>
                                               <object class="GtkScrolledWindow" id="scrolledwindow2">
@@ -743,11 +740,11 @@
   <object class="GtkSizeGroup" id="sizegroupEntries"/>
   <object class="GtkSizeGroup" id="sizegroupSubEntries">
     <widgets>
-      <widget name="type"/>
-      <widget name="max_payload_size"/>
-      <widget name="max_items"/>
-      <widget name="access_model"/>
       <widget name="publish_model"/>
+      <widget name="access_model"/>
+      <widget name="max_items"/>
+      <widget name="max_payload_size"/>
+      <widget name="type"/>
     </widgets>
   </object>
   <object class="GtkListStore" id="pm_store">
