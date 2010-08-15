@@ -193,6 +193,13 @@ public class PsBrowser.UI.MainWindow : Builder {
 		var iq = Pubsub.node_query_nodes (
 			conn.bookmark.jid, conn.bookmark.service, node_name);
 
+		/* Clearing the treeview if node name is null */
+		if (node_name == null) {
+			var node_tree = (TreeView) this.get_object ("nodeList");
+			var model = (TreeStore) node_tree.get_model ();
+			model.clear ();
+		}
+
 		/* Asking to show the loading widget. */
 		this.loading.ref_loading ();
 
@@ -304,14 +311,6 @@ public class PsBrowser.UI.MainWindow : Builder {
 			 * and call the list_nodes method. */
 			conn.authenticated.connect (() => {
 				this.loading.unref_loading ();
-
-				/* The user has clicked in a bookmark, so we have to
-				 * clear the model in order to show only entries of
-				 * that bookmark.  */
-				var node_tree = (TreeView) this.get_object ("nodeList");
-				var model = (TreeStore) node_tree.get_model ();
-				model.clear ();
-
 				this.list_nodes (conn);
 			});
 
@@ -365,7 +364,8 @@ public class PsBrowser.UI.MainWindow : Builder {
 
 	private static int parse_node_create (Xmpp.Client client, Iks stanza,
 										  void *data) {
-		debug (stanza.to_string ());
+		var self = (MainWindow) data;
+		self.list_nodes (self.selected_connection);
 		return 0;
 	}
 
@@ -384,7 +384,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 
 			/* Sending the stanza */
 			var res = this.selected_connection.xmpp.send_and_filter (
-				node, (Xmpp.ClientAnswerCb) parse_node_create, null);
+				node, (Xmpp.ClientAnswerCb) parse_node_create, this);
 
 			/* If sending fails imediatelly, request the hide of
 			 * loading widget. */
