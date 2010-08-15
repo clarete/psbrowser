@@ -292,6 +292,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 			/* Connection already exists, let's just mark it as the
 			 * currentlly selected one. */
 			selected_connection = connections.get (bookmark.get_name ());
+			this.list_nodes (selected_connection);
 		} else {
 			/* No connection with the given bookmark? So let's try to
 			 * create it and set it as the selected one. */
