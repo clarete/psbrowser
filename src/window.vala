@@ -483,10 +483,9 @@ public class PsBrowser.UI.MainWindow : Builder {
 			/* Traversing to iq > pubsub > items > item*/
 			unowned Iks node = stanza.child ().child ().child ();
 
-			/* Getting and cleaning up item store */
+			/* Getting the item store */
 			var model = ((ListStore)
 						 ((TreeView) self.get_object ("itemList")).model);
-			model.clear ();
 
 			/* Adding items to the item model */
 			while (node != null) {
@@ -505,6 +504,12 @@ public class PsBrowser.UI.MainWindow : Builder {
 		var node = Pubsub.node_items (
 			bookmark.jid, bookmark.service, node_name);
 		this.loading.ref_loading ();
+
+		/* Cleaning model before populating it again */
+		var tview = (TreeView) this.get_object ("itemList");
+		((ListStore) tview.model).clear ();
+
+		/* Sending node list request */
 		var res = this.selected_connection.xmpp.send_and_filter (
 			node, (Xmpp.ClientAnswerCb) parse_node_items, this);
 		if (res > 0)
