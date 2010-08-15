@@ -458,44 +458,48 @@ public class PsBrowser.UI.MainWindow : Builder {
 		return false;
 	}
 
-	private static int parse_node_items (Xmpp.Client client, Iks stanza,
+	private static int parse_node_items (Xmpp.Client client,
+										 Iks stza,
 										 void *data) {
 		var self = (MainWindow) data;
 		self.loading.unref_loading ();
-		if (stanza.find_attrib ("type") == "error") {
-			unowned Iks error = stanza.find ("error");
-			var dialog = new MessageDialog.with_markup (
-				self.mwin, DialogFlags.MODAL,
-				MessageType.ERROR, ButtonsType.OK,
-				"<b>Failed to list nodes with code %s</b>",
-				error.find_attrib ("code"));
-			dialog.format_secondary_text (error.child ().name ());
+		unowned Iks stanza = stza.copy ();
 
-			/* We should not call anything that changes the UI in
-			 * another thread, so let's do it in an idle iteration of
-			 * the main loop. */
-			Idle.add (() => {
+		Idle.add (() => {
+			if (stanza.find_attrib ("type") == "error") {
+				unowned Iks error = stanza.find ("error");
+				var dialog = new MessageDialog.with_markup (
+					self.mwin, DialogFlags.MODAL,
+					MessageType.ERROR, ButtonsType.OK,
+					"<b>Failed to list nodes with code %s</b>",
+					error.find_attrib ("code"));
+				dialog.format_secondary_text (error.child ().name ());
+
+				/* We should not call anything that changes the UI in
+				 * another thread, so let's do it in an idle iteration of
+				 * the main loop. */
 				dialog.run ();
 				dialog.destroy ();
 				return false;
-			});
-		} else {
-			/* Traversing to iq > pubsub > items > item*/
-			unowned Iks node = stanza.child ().child ().child ();
+			} else {
+				/* Traversing to iq > pubsub > items > item*/
+				unowned Iks node = stanza.child ().child ().child ();
 
-			/* Getting the item store */
-			var model = ((ListStore)
-						 ((TreeView) self.get_object ("itemList")).model);
+				/* Getting the item store */
+				var model = ((ListStore)
+							 ((TreeView) self.get_object ("itemList")).model);
 
-			/* Adding items to the item model */
-			while (node != null) {
-				TreeIter iter;
-				var node_id = node.find_attrib ("id");
-				model.append (out iter);
-				model.set (iter, 0, node_id);
-				node = node.next ();
+				/* Adding items to the item model */
+				while (node != null) {
+					TreeIter iter;
+					var node_id = node.find_attrib ("id");
+					model.append (out iter);
+					model.set (iter, 0, node_id);
+					node = node.next ();
+				}
+				return false;
 			}
-		}
+		});
 		return 0;
 	}
 
