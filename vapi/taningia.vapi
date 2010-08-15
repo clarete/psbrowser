@@ -56,7 +56,6 @@ namespace Taningia {
 		public void critical (string fmt);
 	}
 
-	[CCode (cheader_filename="taningia/taningia.h")]
 	namespace Xmpp {
 		[CCode (cname="ta_xmpp_client_hook_t", has_target=false)]
 		public delegate int ClientHookFunc (Client client, void *data1,
@@ -96,7 +95,6 @@ namespace Taningia {
 		}
 	}
 
-	[CCode (cheader_filename="taningia/taningia.h")]
 	namespace Pubsub {
 		[CCode (cname="ta_pubsub_node_query_nodes")]
 		public Iks node_query_nodes (string from, string to, string? node);
