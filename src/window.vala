@@ -313,7 +313,10 @@ public class PsBrowser.UI.MainWindow : Builder {
 			 * and call the list_nodes method. */
 			conn.authenticated.connect (() => {
 				this.loading.unref_loading ();
-				this.list_nodes (conn);
+				Idle.add (() => {
+					this.list_nodes (conn);
+					return false;
+				});
 			});
 
 			/* Humm, things went bad, it was not possible to
@@ -376,8 +379,15 @@ public class PsBrowser.UI.MainWindow : Builder {
 				"<b>Failed to create node with code %s</b>",
 				error.find_attrib ("code"));
 			dialog.format_secondary_text (error.child ().name ());
-			dialog.run ();
-			dialog.destroy ();
+
+			/* We should not call anything that changes the UI in
+			 * another thread, so let's do it in an idle iteration of
+			 * the main loop. */
+			Idle.add (() => {
+				dialog.run ();
+				dialog.destroy ();
+				return false;
+			});
 		} else {
 			self.list_nodes (self.selected_connection);
 		}
@@ -448,10 +458,20 @@ public class PsBrowser.UI.MainWindow : Builder {
 				"<b>Failed to delete node with code %s</b>",
 				error.find_attrib ("code"));
 			dialog.format_secondary_text (error.child ().name ());
-			dialog.run ();
-			dialog.destroy ();
+
+			/* We should not call anything that changes the UI in
+			 * another thread, so let's do it in an idle iteration of
+			 * the main loop. */
+			Idle.add (() => {
+				dialog.run ();
+				dialog.destroy ();
+				return false;
+			});
 		} else {
-			self.list_nodes (self.selected_connection);
+			Idle.add (() => {
+				self.list_nodes (self.selected_connection);
+				return false;
+			});
 		}
 		return 0;
 	}
