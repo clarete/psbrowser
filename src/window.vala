@@ -224,6 +224,10 @@ public class PsBrowser.UI.MainWindow : Builder {
 			model.clear ();
 		}
 
+		/* Cleaning item model */
+		var tview = (TreeView) this.get_object ("itemList");
+		((ListStore) tview.model).clear ();
+
 		/* Asking to show the loading widget. */
 		this.loading.ref_loading ();
 
