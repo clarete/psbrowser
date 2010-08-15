@@ -367,6 +367,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 	private static int parse_node_create (Xmpp.Client client, Iks stanza,
 										  void *data) {
 		var self = (MainWindow) data;
+		self.loading.unref_loading ();
 		if (stanza.find_attrib ("type") == "error") {
 			unowned Iks error = stanza.find ("error");
 			var dialog = new MessageDialog.with_markup (
