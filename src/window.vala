@@ -213,7 +213,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 
 		/* We have to give up on show loading if something goes
 		 * wrong. */
-		if (res == 0)
+		if (res > 0)
 			this.loading.unref_loading ();
 	}
 
@@ -401,7 +401,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 
 			/* If sending fails imediatelly, request the hide of
 			 * loading widget. */
-			if (res == 0)
+			if (res > 0)
 				this.loading.unref_loading ();
 		}
 		newform.destroy ();
