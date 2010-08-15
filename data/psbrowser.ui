@@ -17,8 +17,8 @@
   <object class="GtkWindow" id="mainWindow">
     <property name="title" translatable="yes">PsBrowser</property>
     <property name="window_position">center</property>
-    <property name="default_width">640</property>
-    <property name="default_height">480</property>
+    <property name="default_width">800</property>
+    <property name="default_height">600</property>
     <signal name="delete_event" handler="gtk_main_quit"/>
     <child>
       <object class="GtkVBox" id="vbox1">
