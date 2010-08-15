@@ -106,6 +106,9 @@ namespace Iksemel {
 		[CCode (cname="iks_find_attrib")]
 		public unowned string? find_attrib (string name);
 
+		[CCode (cname="iks_name")]
+		public unowned string? name ();
+
 		[CCode (cname="iks_string")]
 		private static unowned string _string (void *nil, Iks x);
 
