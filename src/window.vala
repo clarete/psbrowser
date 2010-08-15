@@ -165,6 +165,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 			delete parent_path;
 		}
 
+		self.loading.unref_loading ();
 		delete cbdata;
 		return 0;
 	}
