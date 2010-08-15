@@ -366,7 +366,19 @@ public class PsBrowser.UI.MainWindow : Builder {
 	private static int parse_node_create (Xmpp.Client client, Iks stanza,
 										  void *data) {
 		var self = (MainWindow) data;
-		self.list_nodes (self.selected_connection);
+		if (stanza.find_attrib ("type") == "error") {
+			unowned Iks error = stanza.find ("error");
+			var dialog = new MessageDialog.with_markup (
+				self.mwin, DialogFlags.MODAL,
+				MessageType.ERROR, ButtonsType.OK,
+				"<b>Failed to create node with code %s</b>",
+				error.find_attrib ("code"));
+			dialog.format_secondary_text (error.child ().name ());
+			dialog.run ();
+			dialog.destroy ();
+		} else {
+			self.list_nodes (self.selected_connection);
+		}
 		return 0;
 	}
 
