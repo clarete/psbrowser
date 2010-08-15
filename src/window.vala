@@ -32,6 +32,7 @@ namespace PsBrowser.UI {
 		private Loading loading;
 		internal BookmarkStore bmstore;
 		internal ConnectionManager connections;
+		internal Connection? selected_connection;
 
 		enum NodeListColumns {
 			NAME,
@@ -284,10 +285,15 @@ namespace PsBrowser.UI {
 			this.bmstore.get_iter (out iter, path);
 			var bookmark = (Bookmark) iter.user_data;
 
-			/* No connection with the given bookmark? So let's try to
-			 * do it. */
-			if (!this.connections.has_key (bookmark.get_name ())) {
+			if (this.connections.has_key (bookmark.get_name ())) {
+				/* Connection already exists, let's just mark it as
+				 * the currentlly selected one. */
+				selected_connection = connections.get (bookmark.get_name ());
+			} else {
+				/* No connection with the given bookmark? So let's try
+				 * to create it and set it as the selected one. */
 				var conn = new Connection (bookmark);
+				selected_connection = conn;
 
 				/* It is important to put the connection in the
 				 * connection manager before authenticating successful
@@ -364,9 +370,13 @@ namespace PsBrowser.UI {
 
 		[CCode (instance_pos=-1)]
 		public void bt_node_add_cb (Button bt) {
+			if (this.selected_connection == null)
+				return;
+			var bookmark = selected_connection.bookmark;
 			var newform = new UI.NewNodeForm (this.mwin);
-			var node = newform.get_node ("a", "b");
+			var node = newform.get_node (bookmark.jid, bookmark.service);
 
+			/* We have a good Iks node, let's send it to the server */
 			if (node != null) {
 				debug (node.to_string ());
 			}
