@@ -37,6 +37,11 @@ public class PsBrowser.UI.MainWindow : Builder {
 		N_COLUMNS
 	}
 
+	enum ItemListColumns {
+		ID,
+		N_COLUMNS
+	}
+
 	public MainWindow () {
 		try {
 			this.add_from_file (
@@ -57,6 +62,7 @@ public class PsBrowser.UI.MainWindow : Builder {
 		this.setup_loading ();
 		this.setup_bookmark_list ();
 		this.setup_node_list ();
+		this.setup_item_list ();
 		this.connect_signals (this);
 	}
 
@@ -119,6 +125,23 @@ public class PsBrowser.UI.MainWindow : Builder {
 		var column = new TreeViewColumn.with_attributes (
 			"Node", renderer, "markup", 0);
 		node_list.append_column (column);
+	}
+
+	/** Sets up cellrenderers and columns for items treeview. */
+	private void setup_item_list () {
+		var list = (TreeView) this.get_object ("itemList");
+
+		/* Setting up model */
+		var model = new ListStore (
+			ItemListColumns.N_COLUMNS,
+			typeof (string));
+		list.set_model (model);
+
+		/* Renderers and columns */
+		var renderer = new CellRendererText ();
+		var column = new TreeViewColumn.with_attributes (
+			"Id", renderer, "text", 0);
+		list.append_column (column);
 	}
 
 	/* -- node listing functions -- */
@@ -435,15 +458,69 @@ public class PsBrowser.UI.MainWindow : Builder {
 		return false;
 	}
 
+	private static int parse_node_items (Xmpp.Client client, Iks stanza,
+										 void *data) {
+		var self = (MainWindow) data;
+		self.loading.unref_loading ();
+		if (stanza.find_attrib ("type") == "error") {
+			unowned Iks error = stanza.find ("error");
+			var dialog = new MessageDialog.with_markup (
+				self.mwin, DialogFlags.MODAL,
+				MessageType.ERROR, ButtonsType.OK,
+				"<b>Failed to list nodes with code %s</b>",
+				error.find_attrib ("code"));
+			dialog.format_secondary_text (error.child ().name ());
+
+			/* We should not call anything that changes the UI in
+			 * another thread, so let's do it in an idle iteration of
+			 * the main loop. */
+			Idle.add (() => {
+				dialog.run ();
+				dialog.destroy ();
+				return false;
+			});
+		} else {
+			/* Traversing to iq > pubsub > items > item*/
+			unowned Iks node = stanza.child ().child ().child ();
+
+			/* Getting and cleaning up item store */
+			var model = ((ListStore)
+						 ((TreeView) self.get_object ("itemList")).model);
+			model.clear ();
+
+			/* Adding items to the item model */
+			while (node != null) {
+				TreeIter iter;
+				var node_id = node.find_attrib ("id");
+				model.append (out iter);
+				model.set (iter, 0, node_id);
+				node = node.next ();
+			}
+		}
+		return 0;
+	}
+
+	private void list_items (string node_name, Connection? conn=null) {
+		var bookmark = (conn != null ? conn : selected_connection).bookmark;
+		var node = Pubsub.node_items (
+			bookmark.jid, bookmark.service, node_name);
+		this.loading.ref_loading ();
+		var res = this.selected_connection.xmpp.send_and_filter (
+			node, (Xmpp.ClientAnswerCb) parse_node_items, this);
+		if (res > 0)
+			this.loading.unref_loading ();
+	}
+
 	[CCode (instance_pos=-1)]
 	public void on_node_list_row_activated_cb (TreeView treeview,
 											   TreePath path,
-											   TreeViewColumn column,
-											   void *data) {
+											   TreeViewColumn column) {
+		/* Getting node name and sending the item list request */
 		TreeIter iter;
 		Value val;
 		treeview.model.get_iter (out iter, path);
 		treeview.model.get_value (iter, NodeListColumns.NAME, out val);
+		this.list_items (val.get_string ());
 	}
 
 	private static int parse_node_delete (Xmpp.Client client, Iks stanza,

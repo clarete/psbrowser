@@ -325,7 +325,7 @@
                             <property name="vscrollbar_policy">automatic</property>
                             <property name="shadow_type">in</property>
                             <child>
-                              <object class="GtkTreeView" id="treeview2">
+                              <object class="GtkTreeView" id="itemList">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                               </object>
