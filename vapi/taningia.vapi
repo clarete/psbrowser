@@ -103,5 +103,8 @@ namespace Taningia {
 		public Iks node_createv (
 			string from, string to, string node,
 			[CCode (array_length=false)] string[] conf_params);
+
+		[CCode (cname="ta_pubsub_node_delete")]
+		public Iks node_delete (string from, string to, string node);
 	}
 }
