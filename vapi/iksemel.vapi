@@ -66,6 +66,7 @@ namespace Iksemel {
 		public unowned string? find_cdata (string name);
 		public unowned string? find_attrib (string name);
 		public unowned string? name ();
+		public unowned Iks? copy ();
 
 		[CCode (cname="iks_string")]
 		private static unowned string _string (void *nil, Iks x);
