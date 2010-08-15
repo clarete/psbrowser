@@ -104,6 +104,10 @@ namespace Taningia {
 			string from, string to, string node,
 			[CCode (array_length=false)] string[] conf_params);
 
+		[CCode (cname="ta_pubsub_node_items")]
+		public Iks node_items (string from, string to, string node,
+							   int max_items=0);
+
 		[CCode (cname="ta_pubsub_node_delete")]
 		public Iks node_delete (string from, string to, string node);
 	}
