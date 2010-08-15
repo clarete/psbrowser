@@ -436,6 +436,65 @@ public class PsBrowser.UI.MainWindow : Builder {
 		treeview.model.get_value (iter, NodeListColumns.NAME, out val);
 	}
 
+	private static int parse_node_delete (Xmpp.Client client, Iks stanza,
+										  void *data) {
+		var self = (MainWindow) data;
+		self.loading.unref_loading ();
+		if (stanza.find_attrib ("type") == "error") {
+			unowned Iks error = stanza.find ("error");
+			var dialog = new MessageDialog.with_markup (
+				self.mwin, DialogFlags.MODAL,
+				MessageType.ERROR, ButtonsType.OK,
+				"<b>Failed to delete node with code %s</b>",
+				error.find_attrib ("code"));
+			dialog.format_secondary_text (error.child ().name ());
+			dialog.run ();
+			dialog.destroy ();
+		} else {
+			self.list_nodes (self.selected_connection);
+		}
+		return 0;
+	}
+
+	[CCode (instance_pos=-1)]
+	public void on_nl_delete_cb (MenuItem item) {
+		/* Getting tree selection */
+		var treeview = (TreeView) this.get_object ("nodeList");
+		var selection = treeview.get_selection ();
+		var rows = selection.get_selected_rows (null);
+
+		/* Getting out if none is selected */
+		if (rows.length () < 1)
+			return;
+
+		/* Asking the user to ensure the node deletion */
+		var dialog = new MessageDialog.with_markup (
+			this.mwin, DialogFlags.MODAL, MessageType.QUESTION,
+			ButtonsType.YES_NO, "<b>Removing selected node</b>");
+		dialog.format_secondary_text (
+			"Are you sure you want to remove selected node?");
+		var answer = dialog.run () == ResponseType.YES;
+		dialog.destroy ();
+
+		/* Yep, he/she wants to procede */
+		if (answer) {
+			TreeIter iter;
+			Value val;
+			treeview.model.get_iter (out iter, rows.nth (0).data);
+			treeview.model.get_value (iter, 0, out val);
+
+			var bookmark = selected_connection.bookmark;
+			var node = Pubsub.node_delete (
+				bookmark.jid, bookmark.service, val.get_string ());
+
+			this.loading.ref_loading ();
+			var res = this.selected_connection.xmpp.send_and_filter (
+				node, (Xmpp.ClientAnswerCb) parse_node_delete, this);
+			if (res > 0)
+				this.loading.unref_loading ();
+		}
+	}
+
 	/* -- Public methods -- */
 
 	/** Calls the show_all() method of the main window. */

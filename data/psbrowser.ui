@@ -432,6 +432,7 @@
         <property name="visible">True</property>
         <property name="use_underline">True</property>
         <property name="use_stock">True</property>
+        <signal name="activate" handler="ps_browser_ui_main_window_on_nl_delete_cb"/>
       </object>
     </child>
   </object>
