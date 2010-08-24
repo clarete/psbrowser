@@ -32,6 +32,8 @@ AC_CONFIG_FILES([
 	Makefile
         vapi/Makefile
         src/Makefile
+	data/Makefile
+	data/pixmaps/Makefile
 ])
 
 AC_OUTPUT
