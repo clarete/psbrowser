@@ -25,6 +25,6 @@ namespace PsBrowser.Resources {
 	}
 
 	public string get_resource_file (string basename) {
-		return Path.build_filename ("", basename);
+		return Path.build_filename (Config.PKGDATADIR, basename);
 	}
 }

@@ -13,17 +13,16 @@ psbrowser_SOURCES = \
 	connections.vala \
 	main.vala
 
-INCLUDES = \
-	-include config.h \
-	$(PSBROWSER_CFLAGS) \
-	-DLOCALEDIR=\""$(localedir)"\" \
-	-DPKGDATADIR=\""$(pkgdatadir)"\" \
-	-DPKGLIBDIR=\""$(pkglibdir)"\"
-
 VALAFLAGS = \
 	--thread \
 	--vapidir=$(srcdir)/../vapi \
+	--pkg config \
 	@PSBROWSER_PACKAGES@
+
+AM_CPPFLAGS = \
+	-DCONFIG_PKGDATADIR=\""$(pkgdatadir)"\" \
+	$(PSBROWSER_CFLAGS) \
+	-include $(CONFIG_HEADER)
 
 psbrowser_LDADD = \
 	$(PSBROWSER_LIBS)
