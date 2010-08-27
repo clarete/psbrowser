@@ -34,6 +34,7 @@ AC_CONFIG_FILES([
         src/Makefile
 	data/Makefile
 	data/pixmaps/Makefile
+	doc/Makefile
 ])
 
 AC_OUTPUT

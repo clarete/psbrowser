@@ -1,1 +1,1 @@
-SUBDIRS = vapi src data
+SUBDIRS = vapi src data doc
