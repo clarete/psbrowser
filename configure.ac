@@ -22,7 +22,7 @@ PSBROWSER_PACKAGES="--pkg gtk+-2.0 \
     --pkg taningia \
     --pkg iksemel" \
 
-pkg_modules="gtk+-2.0 >= 2.14.0 gee-1.0 libxml-2.0 taningia"
+pkg_modules="gtk+-2.0 >= 2.14.0 gee-1.0 libxml-2.0 taningia iksemel"
 PKG_CHECK_MODULES(PSBROWSER, [$pkg_modules])
 AC_SUBST(PSBROWSER_CFLAGS)
 AC_SUBST(PSBROWSER_LIBS)
