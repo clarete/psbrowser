@@ -20,7 +20,7 @@ using Gee;
 using Taningia;
 using Iksemel;
 
-errordomain ConnectionError {
+public errordomain ConnectionError {
 	UNABLE_TO_CONNECT,
 	UNABLE_TO_RUN
 }
